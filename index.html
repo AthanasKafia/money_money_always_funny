@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Money, money, always funny — A & Y Expense Tracker</title>
+  <title>Money, money, always funny — Expense Tracker</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
@@ -297,7 +297,7 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <!-- A's Individual Limit -->
+            <!-- Athanas Individual Limit -->
             <div id="budgetAWrapper" class="p-3 rounded-xl bg-white border border-indigo-100 transition">
               <label class="flex items-center justify-between text-xs font-semibold text-indigo-900 mb-1">
                 <span><i class="fa-solid fa-circle text-[8px] text-indigo-600 mr-1"></i>A's Budget Limit</span>
@@ -306,7 +306,7 @@
               <input type="number" id="budgetAInput" min="0" step="10" onchange="handleConfigChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-indigo-50/50 border border-indigo-200/80 text-sm font-bold text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
 
-            <!-- Y's Individual Limit -->
+            <!-- Yousra Individual Limit -->
             <div id="budgetYWrapper" class="p-3 rounded-xl bg-white border border-emerald-100 transition">
               <label class="flex items-center justify-between text-xs font-semibold text-emerald-900 mb-1">
                 <span><i class="fa-solid fa-circle text-[8px] text-emerald-500 mr-1"></i>Y's Budget Limit</span>
@@ -421,17 +421,17 @@
           </div>
 
           <form id="expenseForm" onsubmit="handleAddExpense(event)" class="space-y-4">
-            <!-- Who is paying: A or Y -->
+            <!-- Who is paying: Athanas or Yousra -->
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">1. Who is paying?</label>
               <div class="grid grid-cols-2 gap-3">
                 <button type="button" id="payerBtnA" onclick="selectPayer('A')" class="py-3 px-4 rounded-2xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition">
                   <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">A</span>
-                  <span>Person A</span>
+                  <span>Athanas</span>
                 </button>
                 <button type="button" id="payerBtnY" onclick="selectPayer('Y')" class="py-3 px-4 rounded-2xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition">
                   <span class="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs flex items-center justify-center">Y</span>
-                  <span>Person Y</span>
+                  <span>Yousra</span>
                 </button>
               </div>
             </div>
@@ -520,13 +520,13 @@
                 All 3 Graphs
               </button>
               <button type="button" id="viewTabUnited" onclick="setGraphView('united')" class="px-3 py-1.5 rounded-lg transition text-slate-600">
-                United (A+Y)
+                United
               </button>
               <button type="button" id="viewTabA" onclick="setGraphView('A')" class="px-3 py-1.5 rounded-lg transition text-indigo-600">
-                Only A
+                Athanas
               </button>
               <button type="button" id="viewTabY" onclick="setGraphView('Y')" class="px-3 py-1.5 rounded-lg transition text-emerald-600">
-                Only Y
+                Yousra
               </button>
             </div>
           </div>
@@ -553,11 +553,11 @@
 
           <!-- Charts Container -->
           <div class="space-y-5">
-            <!-- United Graph (A + Y) -->
+            <!-- United Graph -->
             <div id="chartBoxUnited" class="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
-                  <i class="fa-solid fa-chart-area text-amber-500"></i> United Graph of Expenses (A + Y Combined)
+                  <i class="fa-solid fa-chart-area text-amber-500"></i> Combined Graph of Expenses
                 </span>
                 <span id="unitedChartSubLabel" class="text-xs font-semibold text-slate-500"></span>
               </div>
@@ -566,13 +566,13 @@
               </div>
             </div>
 
-            <!-- Individual Graphs Grid (A & Y side by side) -->
+            <!-- Individual Graphs Grid -->
             <div id="individualChartsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Graph for A -->
+              <!-- Athanas -->
               <div id="chartBoxA" class="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Graph for A
+                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Athanas
                   </span>
                   <span id="aChartSubLabel" class="text-xs font-semibold text-indigo-700"></span>
                 </div>
@@ -581,11 +581,11 @@
                 </div>
               </div>
 
-              <!-- Graph for Y -->
+              <!-- Yousra -->
               <div id="chartBoxY" class="p-4 rounded-2xl bg-emerald-50/30 border border-emerald-100">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Graph for Y
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Yousra
                   </span>
                   <span id="yChartSubLabel" class="text-xs font-semibold text-emerald-700"></span>
                 </div>
@@ -616,8 +616,8 @@
           <!-- Filter by Payer -->
           <select id="filterPayerSelect" onchange="renderAll()" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none">
             <option value="ALL">All Payers (A &amp; Y)</option>
-            <option value="A">Only Paid by A</option>
-            <option value="Y">Only Paid by Y</option>
+            <option value="A">Only Paid by Athanas</option>
+            <option value="Y">Only Paid by Yousra</option>
           </select>
 
           <!-- Filter by Category -->
@@ -668,7 +668,7 @@
               <i class="fa-solid fa-compass"></i>
             </div>
             <div>
-              <h2 class="text-xl font-extrabold text-slate-900">A &amp; Y's Shared Bucket List</h2>
+              <h2 class="text-xl font-extrabold text-slate-900">Athanas &amp; Yousra's Shared Bucket List</h2>
               <p class="text-xs sm:text-sm text-slate-500">Places to visit, activities to do, and unforgettable things to try together</p>
             </div>
           </div>
@@ -695,7 +695,7 @@
             </div>
             <div>
               <h3 class="text-base sm:text-lg font-bold text-slate-800">Add to Bucket List</h3>
-              <p class="text-xs text-slate-500">What should A &amp; Y experience next?</p>
+              <p class="text-xs text-slate-500">What should Athanas &amp; Yousra experience next?</p>
             </div>
           </div>
 
@@ -718,9 +718,9 @@
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Proposed By</label>
               <div class="grid grid-cols-3 gap-2">
-                <button type="button" id="bucketProp_Both" onclick="selectBucketProposer('Both')" class="py-2 px-3 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold text-xs transition">A &amp; Y Both</button>
-                <button type="button" id="bucketProp_A" onclick="selectBucketProposer('A')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Person A</button>
-                <button type="button" id="bucketProp_Y" onclick="selectBucketProposer('Y')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Person Y</button>
+                <button type="button" id="bucketProp_Both" onclick="selectBucketProposer('Both')" class="py-2 px-3 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold text-xs transition">Both</button>
+                <button type="button" id="bucketProp_A" onclick="selectBucketProposer('A')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Athanas</button>
+                <button type="button" id="bucketProp_Y" onclick="selectBucketProposer('Y')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Yousra</button>
               </div>
             </div>
 
@@ -778,25 +778,25 @@
       <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div class="soft-card rounded-3xl p-5 border-t-4 border-t-indigo-500">
           <div class="flex items-center justify-between mb-2">
-            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Wanted by A</span>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Wanted by Athanas</span>
             <i class="fa-solid fa-bag-shopping text-indigo-400"></i>
           </div>
           <div id="wishTotalA" class="text-2xl font-extrabold text-slate-900">€0.00</div>
-          <p id="wishCountA" class="text-xs text-slate-500 mt-1">0 items on A's list</p>
+          <p id="wishCountA" class="text-xs text-slate-500 mt-1">0 items on Athanas list</p>
         </div>
 
         <div class="soft-card rounded-3xl p-5 border-t-4 border-t-emerald-500">
           <div class="flex items-center justify-between mb-2">
-            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">Wanted by Y</span>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">Wanted by Yousra</span>
             <i class="fa-solid fa-bag-shopping text-emerald-400"></i>
           </div>
           <div id="wishTotalY" class="text-2xl font-extrabold text-slate-900">€0.00</div>
-          <p id="wishCountY" class="text-xs text-slate-500 mt-1">0 items on Y's list</p>
+          <p id="wishCountY" class="text-xs text-slate-500 mt-1">0 items on Yousra list</p>
         </div>
 
         <div class="soft-card rounded-3xl p-5 border-t-4 border-t-rose-500">
           <div class="flex items-center justify-between mb-2">
-            <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700">Wanted by Both (A + Y)</span>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700">Wanted by Both</span>
             <i class="fa-solid fa-heart text-rose-500"></i>
           </div>
           <div id="wishTotalBoth" class="text-2xl font-extrabold text-slate-900">€0.00</div>
@@ -813,7 +813,7 @@
             </div>
             <div>
               <h3 class="text-base sm:text-lg font-bold text-slate-800">Add to "I Want It"</h3>
-              <p class="text-xs text-slate-500">Things A, Y, or both want to buy</p>
+              <p class="text-xs text-slate-500">Things Athanas and Yousra want to buy</p>
             </div>
           </div>
 
@@ -869,8 +869,8 @@
           <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-100">
             <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
               <button type="button" id="wishFilter_ALL" onclick="setWishOwnerFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs transition">All</button>
-              <button type="button" id="wishFilter_A" onclick="setWishOwnerFilter('A')" class="px-3 py-1.5 rounded-lg text-indigo-600 transition">A Wants</button>
-              <button type="button" id="wishFilter_Y" onclick="setWishOwnerFilter('Y')" class="px-3 py-1.5 rounded-lg text-emerald-600 transition">Y Wants</button>
+              <button type="button" id="wishFilter_A" onclick="setWishOwnerFilter('A')" class="px-3 py-1.5 rounded-lg text-indigo-600 transition">Athanas</button>
+              <button type="button" id="wishFilter_Y" onclick="setWishOwnerFilter('Y')" class="px-3 py-1.5 rounded-lg text-emerald-600 transition">Yousra</button>
               <button type="button" id="wishFilter_Both" onclick="setWishOwnerFilter('Both')" class="px-3 py-1.5 rounded-lg text-rose-600 transition">Both Want</button>
             </div>
 
@@ -1484,7 +1484,7 @@
       // 1. UNITED CHART
       const unitedDatasets = [
         {
-          label: 'United Cumulative (A + Y)',
+          label: 'United Cumulative',
           data: seriesUnited,
           borderColor: '#F59E0B',
           backgroundColor: 'rgba(245, 158, 11, 0.14)',
@@ -1494,7 +1494,7 @@
           pointRadius: 3
         },
         {
-          label: 'Paid by A',
+          label: 'Paid by Athanas',
           data: seriesA,
           borderColor: '#4F46E5',
           backgroundColor: 'transparent',
@@ -1503,7 +1503,7 @@
           pointRadius: 2
         },
         {
-          label: 'Paid by Y',
+          label: 'Yousra',
           data: seriesY,
           borderColor: '#10B981',
           backgroundColor: 'transparent',
@@ -1555,7 +1555,7 @@
       // 2. A'S INDIVIDUAL CHART
       const aDatasets = [
         {
-          label: "A's Cumulative Spending",
+          label: "Athanas Cumulative Spending",
           data: seriesA,
           borderColor: '#4F46E5',
           backgroundColor: 'rgba(79, 70, 229, 0.15)',
@@ -1581,7 +1581,7 @@
       // 3. Y'S INDIVIDUAL CHART
       const yDatasets = [
         {
-          label: "Y's Cumulative Spending",
+          label: "Yousra Cumulative Spending",
           data: seriesY,
           borderColor: '#10B981',
           backgroundColor: 'rgba(16, 185, 129, 0.15)',
@@ -1614,13 +1614,13 @@
       // United Category Chart
       const unitedDatasets = [
         {
-          label: 'Paid by A',
+          label: 'Paid by Athanas',
           data: dataA,
           backgroundColor: '#4F46E5',
           borderRadius: 8
         },
         {
-          label: 'Paid by Y',
+          label: 'Paid by Yousra',
           data: dataY,
           backgroundColor: '#10B981',
           borderRadius: 8
@@ -1637,7 +1637,7 @@
       // A Category Chart
       renderOrUpdateChart('A', 'aChartCanvas', 'bar', categories, [
         {
-          label: "A's Expenses by Type",
+          label: "Athanas Expenses by Type",
           data: dataA,
           backgroundColor: ['#0284C7', '#9333EA', '#EA580C', '#E11D48'],
           borderRadius: 8
@@ -1647,7 +1647,7 @@
       // Y Category Chart
       renderOrUpdateChart('Y', 'yChartCanvas', 'bar', categories, [
         {
-          label: "Y's Expenses by Type",
+          label: "Yousra Expenses by Type",
           data: dataY,
           backgroundColor: ['#0284C7', '#9333EA', '#EA580C', '#E11D48'],
           borderRadius: 8
