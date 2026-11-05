@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Money, money, always funny — A & Y Expense Tracker</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            cream: '#FAF8F5',
+            personA: {
+              light: '#EEF2FF',
+              DEFAULT: '#4F46E5',
+              dark: '#3730A3'
+            },
+            personY: {
+              light: '#ECFDF5',
+              DEFAULT: '#10B981',
+              dark: '#047857'
+            },
+            united: {
+              light: '#FFFBEB',
+              DEFAULT: '#F59E0B',
+              dark: '#B45309'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #FAF8F5 0%, #F3F4F8 50%, #EFF6FF 100%);
+      color: #1E293B;
+      min-height: 100vh;
+    }
+    .soft-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .soft-card:hover {
+      box-shadow: 0 14px 35px -10px rgba(15, 23, 42, 0.08);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1F5F9;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-indigo-100 selection:text-indigo-900 pb-16">
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Cloud Setup & GitHub Pages Modal -->
+  <div id="helpModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-cloud-bolt"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-800">100% Free Real-Time Cloud Setup (GitHub Pages)</h3>
+            <p class="text-xs text-slate-500">Sync Expenses, Bucket List &amp; "I Want It" live between A and Y</p>
+          </div>
+        </div>
+        <button onclick="toggleHelpModal(false)" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-5 text-sm text-slate-600 leading-relaxed">
+        <!-- Live Connection Status Banner -->
+        <div id="modalCloudBanner" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span id="modalCloudDot" class="w-3 h-3 rounded-full bg-amber-500"></span>
+            <div>
+              <div id="modalCloudTitle" class="font-bold text-slate-800">Checking Cloud Status...</div>
+              <div id="modalCloudSubtitle" class="text-xs text-slate-500"> User ID: <span id="currentUserIdDisplay" class="font-mono text-slate-700">Connecting...</span></div>
+            </div>
+          </div>
+          <button onclick="copyMagicCloudLink()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Copy Magic Setup Link for Y
+          </button>
+        </div>
+
+        <!-- Paste Custom Firebase Config for GitHub Pages -->
+        <div class="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-3">
+          <h4 class="font-bold text-indigo-950 flex items-center gap-2">
+            <i class="fa-solid fa-database text-indigo-600"></i> Connect Your Free Google Firebase Database (For GitHub Hosting)
+          </h4>
+          <p class="text-xs text-slate-600">
+            Right now inside this preview, real-time cloud sync works automatically! When you host <code class="bg-white px-1.5 py-0.5 rounded border">index.html</code> on GitHub Pages, you can create a <strong>100% free Firebase Spark project</strong> (0€/month forever) and paste its <code class="bg-white px-1.5 py-0.5 rounded border">firebaseConfig</code> below once:
+          </p>
+          <ol class="list-decimal list-inside text-xs space-y-1 text-slate-700">
+            <li>Go to <a href="https://console.firebase.google.com/" target="_blank" class="text-indigo-600 underline font-semibold">console.firebase.google.com</a> &rarr; <strong>Create a project</strong> (Free).</li>
+            <li>Enable <strong>Authentication</strong> &rarr; Sign-in method &rarr; Turn on <strong>Anonymous</strong>.</li>
+            <li>Enable <strong>Firestore Database</strong> &rarr; Create database &rarr; Start in <strong>test mode</strong> (or allow read/write).</li>
+            <li>Go to Project Settings (gear icon) &rarr; Add Web App (<code class="bg-white px-1 rounded">&lt;/&gt;</code>) &rarr; Copy the <code class="bg-white px-1 rounded">firebaseConfig</code> object or JSON and paste it below:</li>
+          </ol>
+          <textarea id="customFirebaseConfigInput" rows="4" placeholder='{"apiKey": "AIza...", "authDomain": "...", "projectId": "...", "appId": "..."}' class="w-full p-3 rounded-xl bg-white border border-indigo-200 font-mono text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <button onclick="clearCustomFirebaseConfig()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 text-xs font-semibold transition">
+              Reset to Default
+            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="saveCustomFirebaseConfig()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save &amp; Connect Cloud
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GitHub Pages Quick Steps -->
+        <div class="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+          <h4 class="font-bold text-emerald-950 mb-1.5 flex items-center gap-2">
+            <i class="fa-brands fa-github text-emerald-700"></i> How to Host on GitHub &amp; Connect Y in 1 Click
+          </h4>
+          <ol class="list-decimal list-inside space-y-1 text-xs text-slate-700">
+            <li>Upload this single file as <code class="bg-white px-1.5 py-0.5 rounded border font-semibold">index.html</code> to your GitHub repository and enable <strong>Settings &rarr; Pages</strong>.</li>
+            <li>Open your GitHub Pages link, paste your Firebase config above, and click <strong>Save &amp; Connect Cloud</strong>.</li>
+            <li>Click <strong>"Copy Magic Setup Link for Y"</strong> above and send it to Y on WhatsApp! When Y opens that link once, Y's phone/laptop automatically connects to the exact same live database!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="toggleHelpModal(false)" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Navigation / Header -->
+  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+          <i class="fa-solid fa-coins text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center flex-wrap gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-emerald-800 bg-clip-text text-transparent">
+              Money, money, always funny
+            </h1>
+            <!-- Live Cloud Status Badge -->
+            <button onclick="toggleHelpModal(true)" id="cloudStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 cursor-pointer hover:bg-amber-100 transition" title="Click to configure Cloud Sync">
+              <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span id="cloudStatusText">Connecting...</span>
+            </button>
+          </div>
+          <p class="text-xs text-slate-500">Light &amp; smooth shared tracker for A &amp; Y · Expenses, Bucket List &amp; Wishlist</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (3 Pages) -->
+      <nav class="flex items-center bg-slate-100/90 p-1 rounded-2xl border border-slate-200/70 order-3 lg:order-2 w-full lg:w-auto justify-center">
+        <button type="button" id="mainTab_expenses" onclick="switchMainPage('expenses')" class="flex-1 lg:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-white text-slate-900 shadow-2xs">
+          <i class="fa-solid fa-wallet text-indigo-600"></i>
+          <span>Expenses &amp; Budgets</span>
+        </button>
+        <button type="button" id="mainTab_bucket" onclick="switchMainPage('bucket')" class="flex-1 lg:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-compass text-emerald-600"></i>
+          <span>Bucket List</span>
+          <span id="navBadgeBucket" class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-extrabold">0</span>
+        </button>
+        <button type="button" id="mainTab_wishlist" onclick="switchMainPage('wishlist')" class="flex-1 lg:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-gift text-rose-500"></i>
+          <span>I Want It</span>
+          <span id="navBadgeWishlist" class="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-100 text-rose-800 font-extrabold">0</span>
+        </button>
+      </nav>
+
+      <!-- Sync & Share Utility Bar -->
+      <div class="flex flex-wrap items-center gap-2 order-2 lg:order-3">
+        <button onclick="copyShareableLink()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs transition border border-indigo-200/60" title="Copy a snapshot link with all data">
+          <i class="fa-solid fa-link"></i>
+          <span class="hidden sm:inline">Share Link</span>
+        </button>
+
+        <button onclick="exportDataJson()" class="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition border border-slate-200" title="Export backup file">
+          <i class="fa-solid fa-download text-slate-400"></i>
+        </button>
+
+        <label class="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition border border-slate-200 cursor-pointer" title="Import backup file">
+          <i class="fa-solid fa-upload text-slate-400"></i>
+          <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importDataJson(event)" />
+        </label>
+
+        <button onclick="toggleHelpModal(true)" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition shadow-2xs">
+          <i class="fa-solid fa-cloud"></i>
+          <span>Cloud Setup (GitHub)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+    <!-- =================================================================== -->
+    <!-- PAGE 1: EXPENSES & BUDGETS                                          -->
+    <!-- =================================================================== -->
+    <div id="page_expenses" class="space-y-6">
+
+    <!-- 1. BUDGET & CALENDAR RANGE PANEL -->
+    <section class="soft-card rounded-3xl p-5 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-5 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+            <i class="fa-regular fa-calendar-check"></i>
+          </span>
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-800">Trip Calendar &amp; Budget Limits</h2>
+            <p class="text-xs text-slate-500">Pick any custom date range (1 day, 1 week, 17 days, etc.) and set independent or united budgets</p>
+          </div>
+        </div>
+
+        <!-- Quick Date Presets -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-xs font-medium text-slate-400 mr-1">Quick range:</span>
+          <button onclick="setQuickRange(2)" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">2 Days</button>
+          <button onclick="setQuickRange(7)" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">1 Week</button>
+          <button onclick="setQuickRange(17)" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">17 Days</button>
+          <button onclick="fitRangeToAllExpenses()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition">Fit All Expenses</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Free Calendar Date Picker -->
+        <div class="lg:col-span-5 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/70 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Calendar Date Range</span>
+            <span id="dayCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-2xs">
+              17 Days
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">From Date</label>
+              <input type="date" id="startDateInput" onchange="handleConfigChange()" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">To Date</label>
+              <input type="date" id="endDateInput" onchange="handleConfigChange()" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+          <label class="flex items-center gap-2 pt-1 cursor-pointer select-none">
+            <input type="checkbox" id="filterByDateCheckbox" checked onchange="handleConfigChange()" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
+            <span class="text-xs text-slate-600">Only count &amp; graph expenses inside this calendar window</span>
+          </label>
+        </div>
+
+        <!-- Budget Limit Mode & Amounts -->
+        <div class="lg:col-span-7 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/70 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Budget Limit Configuration</span>
+            <div class="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-semibold">
+              <button type="button" id="modeBtnBoth" onclick="setBudgetMode('both')" class="px-3 py-1 rounded-lg transition">Both</button>
+              <button type="button" id="modeBtnCombined" onclick="setBudgetMode('combined')" class="px-3 py-1 rounded-lg transition">Together (A+Y)</button>
+              <button type="button" id="modeBtnIndependent" onclick="setBudgetMode('independent')" class="px-3 py-1 rounded-lg transition">Independent (A &amp; Y)</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- A's Individual Limit -->
+            <div id="budgetAWrapper" class="p-3 rounded-xl bg-white border border-indigo-100 transition">
+              <label class="flex items-center justify-between text-xs font-semibold text-indigo-900 mb-1">
+                <span><i class="fa-solid fa-circle text-[8px] text-indigo-600 mr-1"></i>A's Budget Limit</span>
+                <span class="text-indigo-500">€</span>
+              </label>
+              <input type="number" id="budgetAInput" min="0" step="10" onchange="handleConfigChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-indigo-50/50 border border-indigo-200/80 text-sm font-bold text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+
+            <!-- Y's Individual Limit -->
+            <div id="budgetYWrapper" class="p-3 rounded-xl bg-white border border-emerald-100 transition">
+              <label class="flex items-center justify-between text-xs font-semibold text-emerald-900 mb-1">
+                <span><i class="fa-solid fa-circle text-[8px] text-emerald-500 mr-1"></i>Y's Budget Limit</span>
+                <span class="text-emerald-600">€</span>
+              </label>
+              <input type="number" id="budgetYInput" min="0" step="10" onchange="handleConfigChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-emerald-50/50 border border-emerald-200/80 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+
+            <!-- United Limit -->
+            <div id="budgetCombinedWrapper" class="p-3 rounded-xl bg-white border border-amber-100 transition">
+              <label class="flex items-center justify-between text-xs font-semibold text-amber-900 mb-1">
+                <span><i class="fa-solid fa-circle text-[8px] text-amber-500 mr-1"></i>United Budget (A+Y)</span>
+                <span class="text-amber-600">€</span>
+              </label>
+              <input type="number" id="budgetCombinedInput" min="0" step="10" onchange="handleConfigChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-amber-50/50 border border-amber-200/80 text-sm font-bold text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. SUMMARY CARDS: HOW MUCH HAS A PAID, HOW MUCH HAS Y PAID, AND UNITED -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <!-- Card A -->
+      <div class="soft-card rounded-3xl p-5 border-t-4 border-t-indigo-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+              <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Paid by A
+            </span>
+            <span id="countABadge" class="text-xs font-medium text-slate-400">0 expenses</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <h3 id="totalAPaid" class="text-3xl font-extrabold text-slate-900">€0.00</h3>
+            <span id="budgetAStatusText" class="text-xs font-semibold text-slate-500">of €500 limit</span>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="progressBarA" class="h-full bg-indigo-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div id="catMiniA" class="flex flex-wrap gap-1.5 pt-1 text-[11px] text-slate-500"></div>
+        </div>
+      </div>
+
+      <!-- Card Y -->
+      <div class="soft-card rounded-3xl p-5 border-t-4 border-t-emerald-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Paid by Y
+            </span>
+            <span id="countYBadge" class="text-xs font-medium text-slate-400">0 expenses</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <h3 id="totalYPaid" class="text-3xl font-extrabold text-slate-900">€0.00</h3>
+            <span id="budgetYStatusText" class="text-xs font-semibold text-slate-500">of €500 limit</span>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="progressBarY" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div id="catMiniY" class="flex flex-wrap gap-1.5 pt-1 text-[11px] text-slate-500"></div>
+        </div>
+      </div>
+
+      <!-- Card United (A + Y) -->
+      <div class="soft-card rounded-3xl p-5 border-t-4 border-t-amber-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/60">
+              <i class="fa-solid fa-handshake-simple text-amber-600"></i> United Total (A + Y)
+            </span>
+            <span id="settlementBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+              All even!
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <h3 id="totalUnitedPaid" class="text-3xl font-extrabold text-slate-900">€0.00</h3>
+            <span id="budgetUnitedStatusText" class="text-xs font-semibold text-slate-500">of €1,000 limit</span>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="progressBarUnited" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+            <span id="shareSplitText">A: 50% · Y: 50%</span>
+            <span id="remainingBudgetText" class="font-semibold text-emerald-700">€0 left</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MAIN WORKSPACE: ADD EXPENSE (LEFT) & INTERACTIVE GRAPHS (RIGHT) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Add Expense Form (4 columns on large screens) -->
+      <div class="lg:col-span-4 soft-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2.5 mb-5">
+            <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+              <i class="fa-solid fa-plus"></i>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-slate-800">Add New Expense</h2>
+              <p class="text-xs text-slate-500">Log who paid and choose the activity type</p>
+            </div>
+          </div>
+
+          <form id="expenseForm" onsubmit="handleAddExpense(event)" class="space-y-4">
+            <!-- Who is paying: A or Y -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">1. Who is paying?</label>
+              <div class="grid grid-cols-2 gap-3">
+                <button type="button" id="payerBtnA" onclick="selectPayer('A')" class="py-3 px-4 rounded-2xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition">
+                  <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">A</span>
+                  <span>Person A</span>
+                </button>
+                <button type="button" id="payerBtnY" onclick="selectPayer('Y')" class="py-3 px-4 rounded-2xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition">
+                  <span class="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs flex items-center justify-center">Y</span>
+                  <span>Person Y</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expense Type: Trip, Hotel, Food, Other activities -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">2. Expense Type</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" onclick="selectCategory('Trip')" id="catBtn_Trip" class="cat-btn p-2.5 rounded-2xl border text-left flex items-center gap-2.5 transition">
+                  <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-plane-departure"></i>
+                  </span>
+                  <span class="text-xs font-bold text-slate-700">Trip</span>
+                </button>
+
+                <button type="button" onclick="selectCategory('Hotel')" id="catBtn_Hotel" class="cat-btn p-2.5 rounded-2xl border text-left flex items-center gap-2.5 transition">
+                  <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-bed"></i>
+                  </span>
+                  <span class="text-xs font-bold text-slate-700">Hotel</span>
+                </button>
+
+                <button type="button" onclick="selectCategory('Food')" id="catBtn_Food" class="cat-btn p-2.5 rounded-2xl border text-left flex items-center gap-2.5 transition">
+                  <span class="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-utensils"></i>
+                  </span>
+                  <span class="text-xs font-bold text-slate-700">Food</span>
+                </button>
+
+                <button type="button" onclick="selectCategory('Other activities')" id="catBtn_Other activities" class="cat-btn p-2.5 rounded-2xl border text-left flex items-center gap-2.5 transition">
+                  <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-ticket"></i>
+                  </span>
+                  <span class="text-xs font-bold text-slate-700 leading-tight">Other activities</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Amount & Date -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">3. Amount (€)</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">€</span>
+                  <input type="number" id="expenseAmount" required min="0.01" step="0.01" placeholder="0.00" class="w-full pl-8 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">4. Date</label>
+                <input type="date" id="expenseDate" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+            </div>
+
+            <!-- Note / Description -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">5. Note / Place (Optional)</label>
+              <input type="text" id="expenseNote" placeholder="e.g., Train tickets, Boutique Hotel, Gelato..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+
+            <button type="submit" class="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-plus-circle"></i>
+              <span>Add Expense to Tracker</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+          <span>Auto-saved in browser</span>
+          <button onclick="resetToSampleData()" class="text-indigo-600 hover:underline font-medium">Reset sample data</button>
+        </div>
+      </div>
+
+      <!-- Interactive Graphs Section (8 columns on large screens) -->
+      <div class="lg:col-span-8 soft-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between">
+        <div>
+          <!-- Graph Header & View Switcher -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-slate-800">Expenses &amp; Budget Limit Graphs</h2>
+              <p class="text-xs text-slate-500">Dashed horizontal lines represent the active budget limits over your calendar period</p>
+            </div>
+
+            <!-- View Mode Toggle -->
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
+              <button type="button" id="viewTabAll" onclick="setGraphView('all')" class="px-3 py-1.5 rounded-lg transition bg-white text-slate-900 shadow-2xs">
+                All 3 Graphs
+              </button>
+              <button type="button" id="viewTabUnited" onclick="setGraphView('united')" class="px-3 py-1.5 rounded-lg transition text-slate-600">
+                United (A+Y)
+              </button>
+              <button type="button" id="viewTabA" onclick="setGraphView('A')" class="px-3 py-1.5 rounded-lg transition text-indigo-600">
+                Only A
+              </button>
+              <button type="button" id="viewTabY" onclick="setGraphView('Y')" class="px-3 py-1.5 rounded-lg transition text-emerald-600">
+                Only Y
+              </button>
+            </div>
+          </div>
+
+          <!-- Graph Type Sub-bar (Cumulative vs Category Breakdown) -->
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div class="inline-flex items-center gap-2 text-xs">
+              <span class="font-semibold text-slate-500">Chart Style:</span>
+              <button type="button" id="chartStyleCumulative" onclick="setChartStyle('cumulative')" class="px-3 py-1 rounded-full font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 transition">
+                <i class="fa-solid fa-chart-line mr-1"></i> Cumulative Timeline + Budget Line
+              </button>
+              <button type="button" id="chartStyleCategory" onclick="setChartStyle('category')" class="px-3 py-1 rounded-full font-semibold bg-white text-slate-600 border border-slate-200 transition">
+                <i class="fa-solid fa-chart-column mr-1"></i> By Expense Type
+              </button>
+            </div>
+
+            <div class="flex items-center gap-3 text-xs font-medium text-slate-500">
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span> A</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Y</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> United</span>
+              <span class="inline-flex items-center gap-1"><span class="w-4 border-t-2 border-dashed border-rose-500"></span> Budget Limit</span>
+            </div>
+          </div>
+
+          <!-- Charts Container -->
+          <div class="space-y-5">
+            <!-- United Graph (A + Y) -->
+            <div id="chartBoxUnited" class="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
+                  <i class="fa-solid fa-chart-area text-amber-500"></i> United Graph of Expenses (A + Y Combined)
+                </span>
+                <span id="unitedChartSubLabel" class="text-xs font-semibold text-slate-500"></span>
+              </div>
+              <div class="relative h-56 sm:h-64 w-full">
+                <canvas id="unitedChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Individual Graphs Grid (A & Y side by side) -->
+            <div id="individualChartsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Graph for A -->
+              <div id="chartBoxA" class="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span> Graph for A
+                  </span>
+                  <span id="aChartSubLabel" class="text-xs font-semibold text-indigo-700"></span>
+                </div>
+                <div class="relative h-48 sm:h-52 w-full">
+                  <canvas id="aChartCanvas"></canvas>
+                </div>
+              </div>
+
+              <!-- Graph for Y -->
+              <div id="chartBoxY" class="p-4 rounded-2xl bg-emerald-50/30 border border-emerald-100">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Graph for Y
+                  </span>
+                  <span id="yChartSubLabel" class="text-xs font-semibold text-emerald-700"></span>
+                </div>
+                <div class="relative h-48 sm:h-52 w-full">
+                  <canvas id="yChartCanvas"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. EXPENSE LIST & FILTERS -->
+    <section class="soft-card rounded-3xl p-5 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-800">Recorded Expenses</h2>
+            <p class="text-xs text-slate-500">Filter by who paid or activity category</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Filter by Payer -->
+          <select id="filterPayerSelect" onchange="renderAll()" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none">
+            <option value="ALL">All Payers (A &amp; Y)</option>
+            <option value="A">Only Paid by A</option>
+            <option value="Y">Only Paid by Y</option>
+          </select>
+
+          <!-- Filter by Category -->
+          <select id="filterCategorySelect" onchange="renderAll()" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none">
+            <option value="ALL">All Categories</option>
+            <option value="Trip">Trip</option>
+            <option value="Hotel">Hotel</option>
+            <option value="Food">Food</option>
+            <option value="Other activities">Other activities</option>
+          </select>
+
+          <!-- Clear All Button -->
+          <button onclick="clearAllExpenses()" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs transition border border-rose-200/60">
+            <i class="fa-regular fa-trash-can mr-1"></i> Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- Table / List -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <th class="py-3 px-3">Date</th>
+              <th class="py-3 px-3">Who Paid</th>
+              <th class="py-3 px-3">Type</th>
+              <th class="py-3 px-3">Description</th>
+              <th class="py-3 px-3 text-right">Amount</th>
+              <th class="py-3 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="expenseTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+
+    </div> <!-- End Page 1: Expenses -->
+
+    <!-- =================================================================== -->
+    <!-- PAGE 2: BUCKET LIST (ACTIVITIES, PLACES TO VISIT, THINGS TO TRY)    -->
+    <!-- =================================================================== -->
+    <div id="page_bucket" class="hidden space-y-6">
+      <!-- Bucket List Header Banner & Stats -->
+      <section class="soft-card rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/60">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md shadow-emerald-500/20">
+              <i class="fa-solid fa-compass"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-slate-900">A &amp; Y's Shared Bucket List</h2>
+              <p class="text-xs sm:text-sm text-slate-500">Places to visit, activities to do, and unforgettable things to try together</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="px-4 py-2 rounded-2xl bg-white border border-slate-200/80 text-center">
+              <div id="bucketStatTotal" class="text-lg font-extrabold text-slate-800">0</div>
+              <div class="text-[11px] font-semibold text-slate-400 uppercase">Total Dreams</div>
+            </div>
+            <div class="px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-center">
+              <div id="bucketStatDone" class="text-lg font-extrabold text-emerald-700">0</div>
+              <div class="text-[11px] font-semibold text-emerald-600 uppercase">Completed 🎉</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Add Bucket List Form -->
+        <div class="lg:col-span-4 soft-card rounded-3xl p-5 sm:p-6 h-fit">
+          <div class="flex items-center gap-2.5 mb-5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-800">Add to Bucket List</h3>
+              <p class="text-xs text-slate-500">What should A &amp; Y experience next?</p>
+            </div>
+          </div>
+
+          <form onsubmit="handleAddBucketItem(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Dream / Activity Title</label>
+              <input type="text" id="bucketTitle" required placeholder="e.g., Northern Lights in Tromsø, Hot Air Balloon..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Category</label>
+              <select id="bucketCategory" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="Place to Visit">🌍 Place to Visit</option>
+                <option value="Activity to Do">🎈 Activity to Do</option>
+                <option value="Thing to Try">✨ Thing to Try</option>
+                <option value="Food / Restaurant">🍝 Food / Restaurant</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Proposed By</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" id="bucketProp_Both" onclick="selectBucketProposer('Both')" class="py-2 px-3 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold text-xs transition">A &amp; Y Both</button>
+                <button type="button" id="bucketProp_A" onclick="selectBucketProposer('A')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Person A</button>
+                <button type="button" id="bucketProp_Y" onclick="selectBucketProposer('Y')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Person Y</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Location / City</label>
+                <input type="text" id="bucketLocation" placeholder="e.g., Kyoto, Amalfi..." class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Target Season/When</label>
+                <input type="text" id="bucketSeason" placeholder="e.g., Summer 2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Notes (Optional)</label>
+              <textarea id="bucketNotes" rows="2" placeholder="Any special details, tips, or links..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-plus-circle"></i>
+              <span>Add to Bucket List</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Bucket List Cards & Filters -->
+        <div class="lg:col-span-8 soft-card rounded-3xl p-5 sm:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-100">
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
+              <button type="button" id="bucketFilter_ALL" onclick="setBucketStatusFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs transition">All</button>
+              <button type="button" id="bucketFilter_TODO" onclick="setBucketStatusFilter('TODO')" class="px-3 py-1.5 rounded-lg text-slate-600 transition">To Do</button>
+              <button type="button" id="bucketFilter_DONE" onclick="setBucketStatusFilter('DONE')" class="px-3 py-1.5 rounded-lg text-emerald-700 transition">Completed 🎉</button>
+            </div>
+
+            <select id="bucketCategoryFilter" onchange="renderBucketList()" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none">
+              <option value="ALL">All Categories</option>
+              <option value="Place to Visit">🌍 Place to Visit</option>
+              <option value="Activity to Do">🎈 Activity to Do</option>
+              <option value="Thing to Try">✨ Thing to Try</option>
+              <option value="Food / Restaurant">🍝 Food / Restaurant</option>
+            </select>
+          </div>
+
+          <div id="bucketListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+      </div>
+    </div> <!-- End Page 2: Bucket List -->
+
+    <!-- =================================================================== -->
+    <!-- PAGE 3: "I WANT IT" (SHARED WISHLIST FOR A & Y)                     -->
+    <!-- =================================================================== -->
+    <div id="page_wishlist" class="hidden space-y-6">
+      <!-- Wishlist Summary Cards -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="soft-card rounded-3xl p-5 border-t-4 border-t-indigo-500">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Wanted by A</span>
+            <i class="fa-solid fa-bag-shopping text-indigo-400"></i>
+          </div>
+          <div id="wishTotalA" class="text-2xl font-extrabold text-slate-900">€0.00</div>
+          <p id="wishCountA" class="text-xs text-slate-500 mt-1">0 items on A's list</p>
+        </div>
+
+        <div class="soft-card rounded-3xl p-5 border-t-4 border-t-emerald-500">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">Wanted by Y</span>
+            <i class="fa-solid fa-bag-shopping text-emerald-400"></i>
+          </div>
+          <div id="wishTotalY" class="text-2xl font-extrabold text-slate-900">€0.00</div>
+          <p id="wishCountY" class="text-xs text-slate-500 mt-1">0 items on Y's list</p>
+        </div>
+
+        <div class="soft-card rounded-3xl p-5 border-t-4 border-t-rose-500">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700">Wanted by Both (A + Y)</span>
+            <i class="fa-solid fa-heart text-rose-500"></i>
+          </div>
+          <div id="wishTotalBoth" class="text-2xl font-extrabold text-slate-900">€0.00</div>
+          <p id="wishCountBoth" class="text-xs text-slate-500 mt-1">0 shared items</p>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Add "I Want It" Item Form -->
+        <div class="lg:col-span-4 soft-card rounded-3xl p-5 sm:p-6 h-fit">
+          <div class="flex items-center gap-2.5 mb-5">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+              <i class="fa-solid fa-gift"></i>
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-800">Add to "I Want It"</h3>
+              <p class="text-xs text-slate-500">Things A, Y, or both want to buy</p>
+            </div>
+          </div>
+
+          <form onsubmit="handleAddWishItem(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Item Name</label>
+              <input type="text" id="wishTitle" required placeholder="e.g., Espresso Machine, Polaroid Camera..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Who Wants It?</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" id="wishWho_A" onclick="selectWishOwner('A')" class="py-2 px-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-900 font-bold text-xs transition">Person A</button>
+                <button type="button" id="wishWho_Y" onclick="selectWishOwner('Y')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Person Y</button>
+                <button type="button" id="wishWho_Both" onclick="selectWishOwner('Both')" class="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs transition">Both (A&amp;Y)</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Est. Price (€)</label>
+                <input type="number" id="wishPrice" min="0" step="0.01" placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Priority</label>
+                <select id="wishPriority" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+                  <option value="Must Have">🔥 Must Have</option>
+                  <option value="Nice to Have">✨ Nice to Have</option>
+                  <option value="Someday">💭 Someday</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Store / Product Link (Optional)</label>
+              <input type="url" id="wishLink" placeholder="https://..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Notes / Color / Size</label>
+              <input type="text" id="wishNotes" placeholder="e.g., Sage green color, size M..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </div>
+
+            <button type="submit" class="w-full py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-heart-circle-plus"></i>
+              <span>Add to "I Want It"</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Wishlist Cards & Filters -->
+        <div class="lg:col-span-8 soft-card rounded-3xl p-5 sm:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-100">
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
+              <button type="button" id="wishFilter_ALL" onclick="setWishOwnerFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs transition">All</button>
+              <button type="button" id="wishFilter_A" onclick="setWishOwnerFilter('A')" class="px-3 py-1.5 rounded-lg text-indigo-600 transition">A Wants</button>
+              <button type="button" id="wishFilter_Y" onclick="setWishOwnerFilter('Y')" class="px-3 py-1.5 rounded-lg text-emerald-600 transition">Y Wants</button>
+              <button type="button" id="wishFilter_Both" onclick="setWishOwnerFilter('Both')" class="px-3 py-1.5 rounded-lg text-rose-600 transition">Both Want</button>
+            </div>
+
+            <select id="wishStatusFilter" onchange="renderWishlist()" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none">
+              <option value="ALL">All Statuses</option>
+              <option value="WISH">Still Wishing</option>
+              <option value="BOUGHT">Bought / Got It! 🛍️</option>
+            </select>
+          </div>
+
+          <div id="wishlistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+      </div>
+    </div> <!-- End Page 3: Wishlist -->
+
+  </main>
+
+  <script>
+    /*************************************************************************
+     * STATE & DEFAULT SAMPLE DATA
+     *************************************************************************/
+    const STORAGE_KEY = 'mmaf_tracker_state_v2';
+    const CUSTOM_FIREBASE_KEY = 'mmaf_custom_firebase_config_v1';
+
+    const CATEGORY_META = {
+      'Trip': { icon: 'fa-plane-departure', bg: 'bg-sky-100', text: 'text-sky-700', color: '#0284C7' },
+      'Hotel': { icon: 'fa-bed', bg: 'bg-purple-100', text: 'text-purple-700', color: '#9333EA' },
+      'Food': { icon: 'fa-utensils', bg: 'bg-orange-100', text: 'text-orange-700', color: '#EA580C' },
+      'Other activities': { icon: 'fa-ticket', bg: 'bg-rose-100', text: 'text-rose-700', color: '#E11D48' }
+    };
+
+    let currentMainPage = 'expenses'; // 'expenses' | 'bucket' | 'wishlist'
+    let currentPayerSelection = 'A';
+    let currentCategorySelection = 'Trip';
+    let currentGraphView = 'all'; // 'all' | 'united' | 'A' | 'Y'
+    let currentChartStyle = 'cumulative'; // 'cumulative' | 'category'
+
+    // Bucket List & Wishlist UI state
+    let currentBucketProposer = 'Both';
+    let currentBucketStatusFilter = 'ALL';
+    let currentWishOwner = 'A';
+    let currentWishOwnerFilter = 'ALL';
+
+    let chartInstances = {
+      united: null,
+      A: null,
+      Y: null
+    };
+
+    function formatDateISO(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function createDefaultState() {
+      const today = new Date();
+      const start = new Date(today);
+      start.setDate(today.getDate() - 6);
+      const end = new Date(today);
+      end.setDate(today.getDate() + 3);
+
+      const d = (offset) => {
+        const dt = new Date(today);
+        dt.setDate(today.getDate() + offset);
+        return formatDateISO(dt);
+      };
+
+      return {
+        config: {
+          startDate: formatDateISO(start),
+          endDate: formatDateISO(end),
+          filterByDate: true,
+          budgetMode: 'both', // 'both' | 'combined' | 'independent'
+          budgetA: 450,
+          budgetY: 450,
+          budgetCombined: 900
+        },
+        expenses: [
+          { id: '1', payer: 'A', category: 'Trip', amount: 120.00, date: d(-5), note: 'High-speed train tickets' },
+          { id: '2', payer: 'Y', category: 'Hotel', amount: 240.00, date: d(-5), note: 'Boutique Hotel (First 2 nights)' },
+          { id: '3', payer: 'A', category: 'Food', amount: 58.50, date: d(-4), note: 'Trattoria dinner & wine' },
+          { id: '4', payer: 'Y', category: 'Other activities', amount: 44.00, date: d(-3), note: 'Museum pass & audio guide' },
+          { id: '5', payer: 'A', category: 'Hotel', amount: 185.00, date: d(-2), note: 'Coastal B&B stay' },
+          { id: '6', payer: 'Y', category: 'Food', amount: 72.00, date: d(-1), note: 'Seafood lunch by the harbor' },
+          { id: '7', payer: 'A', category: 'Other activities', amount: 65.00, date: d(0), note: 'Sunset boat tour' },
+          { id: '8', payer: 'Y', category: 'Trip', amount: 48.00, date: d(0), note: 'Car rental fuel & highway tolls' }
+        ],
+        bucketList: [
+          { id: 'b1', title: 'Watch the sunset in Santorini', category: 'Place to Visit', proposer: 'Both', location: 'Oia, Greece', season: 'Summer', notes: 'Book a cliffside terrace table early!', completed: false, favorite: true },
+          { id: 'b2', title: 'Take a handmade pasta cooking class', category: 'Activity to Do', proposer: 'A', location: 'Bologna, Italy', season: 'Autumn', notes: 'Learn tagliatelle & tortellini from scratch', completed: true, completedDate: d(-2), favorite: true },
+          { id: 'b3', title: 'Sleep in a glass igloo under Northern Lights', category: 'Thing to Try', proposer: 'Y', location: 'Lapland, Finland', season: 'Winter', notes: 'Bring thermal layers!', completed: false, favorite: true }
+        ],
+        wishlist: [
+          { id: 'w1', title: 'Italian Espresso Machine', owner: 'Both', price: 320.00, priority: 'Must Have', link: '', notes: 'Brushed stainless steel for morning cappuccinos', bought: false },
+          { id: 'w2', title: 'Noise-Canceling Travel Headphones', owner: 'A', price: 249.00, priority: 'Nice to Have', link: '', notes: 'Midnight blue color for flights', bought: false },
+          { id: 'w3', title: 'Vintage Film Camera', owner: 'Y', price: 135.00, priority: 'Must Have', link: '', notes: '35mm compact camera for our trip photos', bought: true }
+        ]
+      };
+    }
+
+    let appState = createDefaultState();
+
+    function ensureStateArrays() {
+      if (!appState.config) appState.config = createDefaultState().config;
+      if (!Array.isArray(appState.expenses)) appState.expenses = [];
+      if (!Array.isArray(appState.bucketList)) appState.bucketList = createDefaultState().bucketList;
+      if (!Array.isArray(appState.wishlist)) appState.wishlist = createDefaultState().wishlist;
+    }
+
+    /*************************************************************************
+     * INITIALIZATION & URL HASH / STORAGE SYNC
+     *************************************************************************/
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStateFromUrlOrStorage();
+      ensureStateArrays();
+
+      // Set default new expense date to today
+      document.getElementById('expenseDate').value = formatDateISO(new Date());
+
+      selectPayer('A');
+      selectCategory('Trip');
+      selectBucketProposer('Both');
+      selectWishOwner('A');
+      syncInputsFromState();
+      renderAll();
+
+      // Populate saved custom Firebase config in modal if present
+      const savedFb = localStorage.getItem(CUSTOM_FIREBASE_KEY);
+      if (savedFb) {
+        document.getElementById('customFirebaseConfigInput').value = savedFb;
+      }
+    });
+
+    function loadStateFromUrlOrStorage() {
+      // 1. Check if URL contains #firebase=... (1-Click Magic Cloud Setup Link for Y)
+      if (window.location.hash && window.location.hash.startsWith('#firebase=')) {
+        try {
+          const encoded = window.location.hash.replace('#firebase=', '');
+          const decodedJson = decodeURIComponent(escape(atob(encoded)));
+          JSON.parse(decodedJson); // validate JSON
+          localStorage.setItem(CUSTOM_FIREBASE_KEY, decodedJson);
+          history.replaceState(null, document.title, window.location.pathname + window.location.search);
+          showToast('Cloud Database configured from Magic Link!', 'emerald');
+        } catch (err) {
+          console.warn('Could not parse #firebase magic link:', err);
+        }
+      }
+
+      // 2. Check if URL contains #share=...
+      if (window.location.hash && window.location.hash.startsWith('#share=')) {
+        try {
+          const encoded = window.location.hash.replace('#share=', '');
+          const decodedJson = decodeURIComponent(escape(atob(encoded)));
+          const parsed = JSON.parse(decodedJson);
+          if (parsed && parsed.config && Array.isArray(parsed.expenses)) {
+            appState = parsed;
+            ensureStateArrays();
+            saveStateToStorage();
+            history.replaceState(null, document.title, window.location.pathname + window.location.search);
+            showToast('Shared data loaded from link!', 'emerald');
+            return;
+          }
+        } catch (err) {
+          console.warn('Could not parse shared URL hash:', err);
+        }
+      }
+
+      // 3. Otherwise check localStorage
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.config && Array.isArray(parsed.expenses)) {
+            appState = parsed;
+            ensureStateArrays();
+          }
+        }
+      } catch (e) {
+        console.warn('LocalStorage read error:', e);
+      }
+    }
+
+    function saveStateToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('LocalStorage write error:', e);
+      }
+      // Also push to Firestore real-time cloud if connected!
+      if (typeof window.pushStateToCloud === 'function') {
+        window.pushStateToCloud(appState);
+      }
+    }
+
+    function saveStateToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('LocalStorage write error:', e);
+      }
+    }
+
+    function syncInputsFromState() {
+      document.getElementById('startDateInput').value = appState.config.startDate;
+      document.getElementById('endDateInput').value = appState.config.endDate;
+      document.getElementById('filterByDateCheckbox').checked = appState.config.filterByDate;
+      document.getElementById('budgetAInput').value = appState.config.budgetA;
+      document.getElementById('budgetYInput').value = appState.config.budgetY;
+      document.getElementById('budgetCombinedInput').value = appState.config.budgetCombined;
+      updateBudgetModeUI();
+    }
+
+    /*************************************************************************
+     * USER INTERACTIONS: CONFIG, DATE RANGES, PAYER & CATEGORY
+     *************************************************************************/
+    function handleConfigChange() {
+      let start = document.getElementById('startDateInput').value;
+      let end = document.getElementById('endDateInput').value;
+
+      if (start && end && start > end) {
+        // Swap if start is after end
+        const temp = start;
+        start = end;
+        end = temp;
+        document.getElementById('startDateInput').value = start;
+        document.getElementById('endDateInput').value = end;
+      }
+
+      appState.config.startDate = start;
+      appState.config.endDate = end;
+      appState.config.filterByDate = document.getElementById('filterByDateCheckbox').checked;
+      appState.config.budgetA = Math.max(0, parseFloat(document.getElementById('budgetAInput').value) || 0);
+      appState.config.budgetY = Math.max(0, parseFloat(document.getElementById('budgetYInput').value) || 0);
+      appState.config.budgetCombined = Math.max(0, parseFloat(document.getElementById('budgetCombinedInput').value) || 0);
+
+      saveStateToStorage();
+      renderAll();
+    }
+
+    function setBudgetMode(mode) {
+      appState.config.budgetMode = mode;
+      updateBudgetModeUI();
+      saveStateToStorage();
+      renderAll();
+    }
+
+    function updateBudgetModeUI() {
+      const mode = appState.config.budgetMode;
+      const modes = {
+        both: document.getElementById('modeBtnBoth'),
+        combined: document.getElementById('modeBtnCombined'),
+        independent: document.getElementById('modeBtnIndependent')
+      };
+
+      Object.keys(modes).forEach(k => {
+        if (k === mode) {
+          modes[k].className = 'px-3 py-1 rounded-lg transition bg-white text-slate-900 shadow-2xs';
+        } else {
+          modes[k].className = 'px-3 py-1 rounded-lg transition text-slate-600 hover:text-slate-900';
+        }
+      });
+
+      const aWrap = document.getElementById('budgetAWrapper');
+      const yWrap = document.getElementById('budgetYWrapper');
+      const cWrap = document.getElementById('budgetCombinedWrapper');
+
+      aWrap.style.opacity = (mode === 'combined') ? '0.45' : '1';
+      yWrap.style.opacity = (mode === 'combined') ? '0.45' : '1';
+      cWrap.style.opacity = (mode === 'independent') ? '0.45' : '1';
+    }
+
+    function setQuickRange(days) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - (days - 1));
+      appState.config.startDate = formatDateISO(start);
+      appState.config.endDate = formatDateISO(end);
+      appState.config.filterByDate = true;
+      syncInputsFromState();
+      saveStateToStorage();
+      renderAll();
+      showToast(`Calendar range set to ${days} days`, 'indigo');
+    }
+
+    function fitRangeToAllExpenses() {
+      if (appState.expenses.length === 0) {
+        setQuickRange(7);
+        return;
+      }
+      const dates = appState.expenses.map(e => e.date).sort();
+      appState.config.startDate = dates[0];
+      appState.config.endDate = dates[dates.length - 1];
+      syncInputsFromState();
+      saveStateToStorage();
+      renderAll();
+      showToast('Calendar fitted to all recorded expenses', 'indigo');
+    }
+
+    function selectPayer(payer) {
+      currentPayerSelection = payer;
+      const btnA = document.getElementById('payerBtnA');
+      const btnY = document.getElementById('payerBtnY');
+
+      if (payer === 'A') {
+        btnA.className = 'py-3 px-4 rounded-2xl border-2 border-indigo-600 bg-indigo-50/90 text-indigo-950 font-bold text-sm flex items-center justify-center gap-2 transition shadow-2xs';
+        btnY.className = 'py-3 px-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 hover:bg-slate-50 font-bold text-sm flex items-center justify-center gap-2 transition';
+      } else {
+        btnY.className = 'py-3 px-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/90 text-emerald-950 font-bold text-sm flex items-center justify-center gap-2 transition shadow-2xs';
+        btnA.className = 'py-3 px-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 hover:bg-slate-50 font-bold text-sm flex items-center justify-center gap-2 transition';
+      }
+    }
+
+    function selectCategory(cat) {
+      currentCategorySelection = cat;
+      const cats = ['Trip', 'Hotel', 'Food', 'Other activities'];
+      cats.forEach(c => {
+        const btn = document.getElementById(`catBtn_${c}`);
+        if (c === cat) {
+          btn.className = 'cat-btn p-2.5 rounded-2xl border-2 border-slate-900 bg-slate-900/5 text-left flex items-center gap-2.5 transition shadow-2xs';
+        } else {
+          btn.className = 'cat-btn p-2.5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-left flex items-center gap-2.5 transition';
+        }
+      });
+    }
+
+    function handleAddExpense(e) {
+      e.preventDefault();
+      const amountVal = parseFloat(document.getElementById('expenseAmount').value);
+      const dateVal = document.getElementById('expenseDate').value;
+      const noteVal = document.getElementById('expenseNote').value.trim();
+
+      if (!amountVal || amountVal <= 0 || !dateVal) return;
+
+      const newExp = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        payer: currentPayerSelection,
+        category: currentCategorySelection,
+        amount: Math.round(amountVal * 100) / 100,
+        date: dateVal,
+        note: noteVal || `${currentCategorySelection} expense`
+      };
+
+      appState.expenses.push(newExp);
+
+      // Expand date range automatically if the added expense falls outside current calendar range
+      if (dateVal < appState.config.startDate) {
+        appState.config.startDate = dateVal;
+      }
+      if (dateVal > appState.config.endDate) {
+        appState.config.endDate = dateVal;
+      }
+
+      document.getElementById('expenseAmount').value = '';
+      document.getElementById('expenseNote').value = '';
+
+      syncInputsFromState();
+      saveStateToStorage();
+      renderAll();
+      showToast(`Added €${newExp.amount.toFixed(2)} paid by ${newExp.payer}`, newExp.payer === 'A' ? 'indigo' : 'emerald');
+    }
+
+    function deleteExpense(id) {
+      appState.expenses = appState.expenses.filter(item => item.id !== id);
+      saveStateToStorage();
+      renderAll();
+      showToast('Expense removed', 'slate');
+    }
+
+    function clearAllExpenses() {
+      appState.expenses = [];
+      saveStateToStorage();
+      renderAll();
+      showToast('All expenses cleared', 'slate');
+    }
+
+    function resetToSampleData() {
+      appState = createDefaultState();
+      syncInputsFromState();
+      saveStateToStorage();
+      renderAll();
+      showToast('Sample trip expenses restored', 'indigo');
+    }
+
+    /*************************************************************************
+     * CALCULATIONS & RENDER PIPELINE
+     *************************************************************************/
+    function getFilteredExpensesByDate() {
+      const { startDate, endDate, filterByDate } = appState.config;
+      return appState.expenses.filter(exp => {
+        if (!filterByDate) return true;
+        if (startDate && exp.date < startDate) return false;
+        if (endDate && exp.date > endDate) return false;
+        return true;
+      });
+    }
+
+    function getDaySpanList(startDateStr, endDateStr) {
+      const list = [];
+      if (!startDateStr || !endDateStr) return list;
+      const curr = new Date(startDateStr + 'T00:00:00');
+      const end = new Date(endDateStr + 'T00:00:00');
+      let safety = 0;
+      while (curr <= end && safety < 366) {
+        list.push(formatDateISO(curr));
+        curr.setDate(curr.getDate() + 1);
+        safety++;
+      }
+      return list;
+    }
+
+    function renderAll() {
+      const dateFiltered = getFilteredExpensesByDate();
+      const dayList = getDaySpanList(appState.config.startDate, appState.config.endDate);
+      const numDays = Math.max(1, dayList.length);
+
+      // Update day badge
+      document.getElementById('dayCountBadge').textContent = `${numDays} ${numDays === 1 ? 'Day' : 'Days'}`;
+
+      // Totals for A, Y, United
+      const expA = dateFiltered.filter(e => e.payer === 'A');
+      const expY = dateFiltered.filter(e => e.payer === 'Y');
+
+      const sumA = expA.reduce((acc, e) => acc + e.amount, 0);
+      const sumY = expY.reduce((acc, e) => acc + e.amount, 0);
+      const sumUnited = sumA + sumY;
+
+      const { budgetA, budgetY, budgetCombined, budgetMode } = appState.config;
+      const effectiveUnitedLimit = (budgetMode === 'independent') ? (budgetA + budgetY) : budgetCombined;
+
+      // Update Card A
+      document.getElementById('totalAPaid').textContent = `€${sumA.toFixed(2)}`;
+      document.getElementById('countABadge').textContent = `${expA.length} ${expA.length === 1 ? 'expense' : 'expenses'}`;
+      document.getElementById('budgetAStatusText').textContent = budgetA > 0 ? `of €${budgetA.toFixed(0)} limit` : 'No limit set';
+      const pctA = budgetA > 0 ? Math.min(100, (sumA / budgetA) * 100) : 0;
+      const barA = document.getElementById('progressBarA');
+      barA.style.width = `${pctA}%`;
+      barA.className = `h-full rounded-full transition-all duration-500 ${sumA > budgetA && budgetA > 0 ? 'bg-rose-500' : 'bg-indigo-600'}`;
+      renderCategoryMiniPills('catMiniA', expA);
+
+      // Update Card Y
+      document.getElementById('totalYPaid').textContent = `€${sumY.toFixed(2)}`;
+      document.getElementById('countYBadge').textContent = `${expY.length} ${expY.length === 1 ? 'expense' : 'expenses'}`;
+      document.getElementById('budgetYStatusText').textContent = budgetY > 0 ? `of €${budgetY.toFixed(0)} limit` : 'No limit set';
+      const pctY = budgetY > 0 ? Math.min(100, (sumY / budgetY) * 100) : 0;
+      const barY = document.getElementById('progressBarY');
+      barY.style.width = `${pctY}%`;
+      barY.className = `h-full rounded-full transition-all duration-500 ${sumY > budgetY && budgetY > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`;
+      renderCategoryMiniPills('catMiniY', expY);
+
+      // Update Card United
+      document.getElementById('totalUnitedPaid').textContent = `€${sumUnited.toFixed(2)}`;
+      document.getElementById('budgetUnitedStatusText').textContent = effectiveUnitedLimit > 0 ? `of €${effectiveUnitedLimit.toFixed(0)} limit` : 'No limit set';
+      const pctUnited = effectiveUnitedLimit > 0 ? Math.min(100, (sumUnited / effectiveUnitedLimit) * 100) : 0;
+      const barU = document.getElementById('progressBarUnited');
+      barU.style.width = `${pctUnited}%`;
+      barU.className = `h-full rounded-full transition-all duration-500 ${sumUnited > effectiveUnitedLimit && effectiveUnitedLimit > 0 ? 'bg-rose-500' : 'bg-amber-500'}`;
+
+      // Settlement Indicator (50/50 balance)
+      const diff = Math.abs(sumA - sumY) / 2;
+      const settlementEl = document.getElementById('settlementBadge');
+      if (diff < 0.01) {
+        settlementEl.textContent = 'A & Y are even!';
+        settlementEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700';
+      } else if (sumA > sumY) {
+        settlementEl.textContent = `Y owes A €${diff.toFixed(2)}`;
+        settlementEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200';
+      } else {
+        settlementEl.textContent = `A owes Y €${diff.toFixed(2)}`;
+        settlementEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
+      }
+
+      const shareA = sumUnited > 0 ? Math.round((sumA / sumUnited) * 100) : 50;
+      const shareY = 100 - shareA;
+      document.getElementById('shareSplitText').textContent = `A: ${shareA}% · Y: ${shareY}%`;
+
+      const remEl = document.getElementById('remainingBudgetText');
+      const remaining = effectiveUnitedLimit - sumUnited;
+      if (remaining >= 0) {
+        remEl.textContent = `€${remaining.toFixed(2)} under budget`;
+        remEl.className = 'font-semibold text-emerald-700';
+      } else {
+        remEl.textContent = `€${Math.abs(remaining).toFixed(2)} over budget!`;
+        remEl.className = 'font-semibold text-rose-600';
+      }
+
+      // Render Charts & Table
+      renderCharts(dateFiltered, dayList);
+      renderExpenseTable(dateFiltered);
+      renderBucketList();
+      renderWishlist();
+    }
+
+    function renderCategoryMiniPills(containerId, expensesList) {
+      const container = document.getElementById(containerId);
+      const totals = { 'Trip': 0, 'Hotel': 0, 'Food': 0, 'Other activities': 0 };
+      expensesList.forEach(e => {
+        if (totals[e.category] !== undefined) totals[e.category] += e.amount;
+      });
+      container.innerHTML = Object.keys(totals).map(cat => {
+        return `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">${cat}: €${totals[cat].toFixed(0)}</span>`;
+      }).join('');
+    }
+
+    /*************************************************************************
+     * CHARTS (A'S GRAPH, Y'S GRAPH, UNITED GRAPH + BUDGET LINES)
+     *************************************************************************/
+    function setGraphView(view) {
+      currentGraphView = view;
+      const tabs = {
+        all: document.getElementById('viewTabAll'),
+        united: document.getElementById('viewTabUnited'),
+        A: document.getElementById('viewTabA'),
+        Y: document.getElementById('viewTabY')
+      };
+      Object.keys(tabs).forEach(k => {
+        if (k === view) {
+          tabs[k].className = 'px-3 py-1.5 rounded-lg transition bg-white text-slate-900 shadow-2xs';
+        } else {
+          tabs[k].className = 'px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900';
+        }
+      });
+
+      const boxUnited = document.getElementById('chartBoxUnited');
+      const indGrid = document.getElementById('individualChartsGrid');
+      const boxA = document.getElementById('chartBoxA');
+      const boxY = document.getElementById('chartBoxY');
+
+      boxUnited.classList.toggle('hidden', view === 'A' || view === 'Y');
+      indGrid.classList.toggle('hidden', view === 'united');
+
+      if (view === 'A') {
+        indGrid.className = 'grid grid-cols-1 gap-4';
+        boxA.classList.remove('hidden');
+        boxY.classList.add('hidden');
+      } else if (view === 'Y') {
+        indGrid.className = 'grid grid-cols-1 gap-4';
+        boxY.classList.remove('hidden');
+        boxA.classList.add('hidden');
+      } else if (view === 'all') {
+        indGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+        boxA.classList.remove('hidden');
+        boxY.classList.remove('hidden');
+      }
+
+      renderAll();
+    }
+
+    function setChartStyle(style) {
+      currentChartStyle = style;
+      const btnCum = document.getElementById('chartStyleCumulative');
+      const btnCat = document.getElementById('chartStyleCategory');
+      if (style === 'cumulative') {
+        btnCum.className = 'px-3 py-1 rounded-full font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 transition';
+        btnCat.className = 'px-3 py-1 rounded-full font-semibold bg-white text-slate-600 border border-slate-200 transition';
+      } else {
+        btnCat.className = 'px-3 py-1 rounded-full font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 transition';
+        btnCum.className = 'px-3 py-1 rounded-full font-semibold bg-white text-slate-600 border border-slate-200 transition';
+      }
+      renderAll();
+    }
+
+    function renderCharts(expenses, dayList) {
+      const { budgetA, budgetY, budgetCombined, budgetMode } = appState.config;
+      const showIndividualLimits = (budgetMode === 'both' || budgetMode === 'independent');
+      const showCombinedLimit = (budgetMode === 'both' || budgetMode === 'combined');
+
+      // Format nice short labels like "Nov 5"
+      const shortDateLabels = dayList.map(d => {
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      });
+
+      // Compute daily cumulative series
+      let cumA = 0;
+      let cumY = 0;
+      const seriesA = [];
+      const seriesY = [];
+      const seriesUnited = [];
+
+      dayList.forEach(dateStr => {
+        const daySumA = expenses.filter(e => e.payer === 'A' && e.date === dateStr).reduce((s, e) => s + e.amount, 0);
+        const daySumY = expenses.filter(e => e.payer === 'Y' && e.date === dateStr).reduce((s, e) => s + e.amount, 0);
+        cumA += daySumA;
+        cumY += daySumY;
+        seriesA.push(Number(cumA.toFixed(2)));
+        seriesY.push(Number(cumY.toFixed(2)));
+        seriesUnited.push(Number((cumA + cumY).toFixed(2)));
+      });
+
+      // Sub-labels
+      document.getElementById('unitedChartSubLabel').textContent = showCombinedLimit
+        ? `United Limit: €${budgetCombined}`
+        : `Sum of Limits: €${budgetA + budgetY}`;
+      document.getElementById('aChartSubLabel').textContent = showIndividualLimits
+        ? `A's Limit: €${budgetA}`
+        : `Paid: €${cumA.toFixed(2)}`;
+      document.getElementById('yChartSubLabel').textContent = showIndividualLimits
+        ? `Y's Limit: €${budgetY}`
+        : `Paid: €${cumY.toFixed(2)}`;
+
+      if (currentChartStyle === 'cumulative') {
+        buildCumulativeCharts(shortDateLabels, seriesA, seriesY, seriesUnited, showIndividualLimits, showCombinedLimit, budgetA, budgetY, budgetCombined);
+      } else {
+        buildCategoryCharts(expenses, showIndividualLimits, showCombinedLimit, budgetA, budgetY, budgetCombined);
+      }
+    }
+
+    function buildCumulativeCharts(labels, seriesA, seriesY, seriesUnited, showInd, showComb, budgetA, budgetY, budgetCombined) {
+      // 1. UNITED CHART
+      const unitedDatasets = [
+        {
+          label: 'United Cumulative (A + Y)',
+          data: seriesUnited,
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245, 158, 11, 0.14)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3
+        },
+        {
+          label: 'Paid by A',
+          data: seriesA,
+          borderColor: '#4F46E5',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          tension: 0.3,
+          pointRadius: 2
+        },
+        {
+          label: 'Paid by Y',
+          data: seriesY,
+          borderColor: '#10B981',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          tension: 0.3,
+          pointRadius: 2
+        }
+      ];
+
+      if (showComb && budgetCombined > 0) {
+        unitedDatasets.push({
+          label: `United Budget Limit (€${budgetCombined})`,
+          data: Array(labels.length).fill(budgetCombined),
+          borderColor: '#E11D48',
+          borderWidth: 2,
+          borderDash: [6, 6],
+          pointRadius: 0,
+          fill: false
+        });
+      }
+
+      if (showInd && (budgetA > 0 || budgetY > 0)) {
+        if (budgetA > 0) {
+          unitedDatasets.push({
+            label: `A's Budget Limit (€${budgetA})`,
+            data: Array(labels.length).fill(budgetA),
+            borderColor: 'rgba(79, 70, 229, 0.55)',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            fill: false
+          });
+        }
+        if (budgetY > 0) {
+          unitedDatasets.push({
+            label: `Y's Budget Limit (€${budgetY})`,
+            data: Array(labels.length).fill(budgetY),
+            borderColor: 'rgba(16, 185, 129, 0.65)',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            fill: false
+          });
+        }
+      }
+
+      renderOrUpdateChart('united', 'unitedChartCanvas', 'line', labels, unitedDatasets);
+
+      // 2. A'S INDIVIDUAL CHART
+      const aDatasets = [
+        {
+          label: "A's Cumulative Spending",
+          data: seriesA,
+          borderColor: '#4F46E5',
+          backgroundColor: 'rgba(79, 70, 229, 0.15)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3
+        }
+      ];
+      if (budgetA > 0) {
+        aDatasets.push({
+          label: `A's Budget Limit (€${budgetA})`,
+          data: Array(labels.length).fill(budgetA),
+          borderColor: '#E11D48',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false
+        });
+      }
+      renderOrUpdateChart('A', 'aChartCanvas', 'line', labels, aDatasets);
+
+      // 3. Y'S INDIVIDUAL CHART
+      const yDatasets = [
+        {
+          label: "Y's Cumulative Spending",
+          data: seriesY,
+          borderColor: '#10B981',
+          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3
+        }
+      ];
+      if (budgetY > 0) {
+        yDatasets.push({
+          label: `Y's Budget Limit (€${budgetY})`,
+          data: Array(labels.length).fill(budgetY),
+          borderColor: '#E11D48',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false
+        });
+      }
+      renderOrUpdateChart('Y', 'yChartCanvas', 'line', labels, yDatasets);
+    }
+
+    function buildCategoryCharts(expenses, showInd, showComb, budgetA, budgetY, budgetCombined) {
+      const categories = ['Trip', 'Hotel', 'Food', 'Other activities'];
+      const dataA = categories.map(cat => expenses.filter(e => e.payer === 'A' && e.category === cat).reduce((s, e) => s + e.amount, 0));
+      const dataY = categories.map(cat => expenses.filter(e => e.payer === 'Y' && e.category === cat).reduce((s, e) => s + e.amount, 0));
+      const dataUnited = categories.map((_, i) => Number((dataA[i] + dataY[i]).toFixed(2)));
+
+      // United Category Chart
+      const unitedDatasets = [
+        {
+          label: 'Paid by A',
+          data: dataA,
+          backgroundColor: '#4F46E5',
+          borderRadius: 8
+        },
+        {
+          label: 'Paid by Y',
+          data: dataY,
+          backgroundColor: '#10B981',
+          borderRadius: 8
+        },
+        {
+          label: 'Combined Category Total',
+          data: dataUnited,
+          backgroundColor: '#F59E0B',
+          borderRadius: 8
+        }
+      ];
+      renderOrUpdateChart('united', 'unitedChartCanvas', 'bar', categories, unitedDatasets);
+
+      // A Category Chart
+      renderOrUpdateChart('A', 'aChartCanvas', 'bar', categories, [
+        {
+          label: "A's Expenses by Type",
+          data: dataA,
+          backgroundColor: ['#0284C7', '#9333EA', '#EA580C', '#E11D48'],
+          borderRadius: 8
+        }
+      ]);
+
+      // Y Category Chart
+      renderOrUpdateChart('Y', 'yChartCanvas', 'bar', categories, [
+        {
+          label: "Y's Expenses by Type",
+          data: dataY,
+          backgroundColor: ['#0284C7', '#9333EA', '#EA580C', '#E11D48'],
+          borderRadius: 8
+        }
+      ]);
+    }
+
+    function renderOrUpdateChart(key, canvasId, type, labels, datasets) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (chartInstances[key]) {
+        chartInstances[key].destroy();
+      }
+
+      chartInstances[key] = new Chart(ctx, {
+        type: type,
+        data: {
+          labels: labels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 10,
+                usePointStyle: true,
+                font: { family: '"Plus Jakarta Sans", sans-serif', size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: €${Number(context.parsed.y).toFixed(2)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(226, 232, 240, 0.6)' },
+              ticks: {
+                callback: function(value) { return '€' + value; },
+                font: { family: '"Plus Jakarta Sans", sans-serif', size: 11 }
+              }
+            },
+            x: {
+              grid: { display: false },
+              ticks: {
+                font: { family: '"Plus Jakarta Sans", sans-serif', size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /*************************************************************************
+     * EXPENSE HISTORY TABLE
+     *************************************************************************/
+    function renderExpenseTable(dateFilteredExpenses) {
+      const payerFilter = document.getElementById('filterPayerSelect').value;
+      const catFilter = document.getElementById('filterCategorySelect').value;
+
+      const filtered = dateFilteredExpenses
+        .filter(e => payerFilter === 'ALL' || e.payer === payerFilter)
+        .filter(e => catFilter === 'ALL' || e.category === catFilter)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      const tbody = document.getElementById('expenseTableBody');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-10 text-center text-slate-400 text-sm">
+              No expenses match the selected filters or calendar range.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(exp => {
+        const meta = CATEGORY_META[exp.category] || CATEGORY_META['Other activities'];
+        const payerBadge = exp.payer === 'A'
+          ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60"><span class="w-2 h-2 rounded-full bg-indigo-600"></span>Person A</span>`
+          : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Person Y</span>`;
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="py-3 px-3 font-medium text-slate-600 whitespace-nowrap">${exp.date}</td>
+            <td class="py-3 px-3 whitespace-nowrap">${payerBadge}</td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold ${meta.bg} ${meta.text}">
+                <i class="fa-solid ${meta.icon}"></i> ${exp.category}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-slate-700">${escapeHtml(exp.note)}</td>
+            <td class="py-3 px-3 text-right font-extrabold text-slate-900 whitespace-nowrap">€${exp.amount.toFixed(2)}</td>
+            <td class="py-3 px-3 text-right whitespace-nowrap">
+              <button onclick="deleteExpense('${exp.id}')" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition inline-flex items-center justify-center" title="Delete expense">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /*************************************************************************
+     * SHARING, EXPORT, IMPORT & HELP MODAL
+     *************************************************************************/
+    function copyShareableLink() {
+      try {
+        const jsonStr = JSON.stringify(appState);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        const baseUrl = window.location.href.split('#')[0];
+        const shareUrl = `${baseUrl}#share=${encoded}`;
+
+        const tempInput = document.createElement('textarea');
+        tempInput.value = shareUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+
+        showToast('Share link copied! Send it to A or Y on WhatsApp/Telegram.', 'indigo');
+      } catch (err) {
+        showToast('Could not generate share link', 'rose');
+      }
+    }
+
+    function exportDataJson() {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute('href', dataStr);
+      dlAnchor.setAttribute('download', `money-always-funny-${appState.config.startDate}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      showToast('Backup JSON file downloaded!', 'emerald');
+    }
+
+    function importDataJson(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && parsed.config && Array.isArray(parsed.expenses)) {
+            appState = parsed;
+            syncInputsFromState();
+            saveStateToStorage();
+            renderAll();
+            showToast('Expenses & budget imported!', 'emerald');
+          } else {
+            showToast('Invalid JSON file structure', 'rose');
+          }
+        } catch (err) {
+          showToast('Failed to read JSON file', 'rose');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function toggleHelpModal(show) {
+      const modal = document.getElementById('helpModal');
+      modal.classList.toggle('hidden', !show);
+    }
+
+    function showToast(message, color = 'indigo') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const bgMap = {
+        indigo: 'bg-indigo-600',
+        emerald: 'bg-emerald-600',
+        rose: 'bg-rose-600',
+        slate: 'bg-slate-800'
+      };
+      toast.className = `${bgMap[color] || 'bg-slate-800'} text-white px-4 py-2.5 rounded-2xl shadow-lg text-xs font-semibold flex items-center gap-2 transition-all duration-300`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /*************************************************************************
+     * PAGE NAVIGATION (EXPENSES / BUCKET LIST / I WANT IT)
+     *************************************************************************/
+    function switchMainPage(page) {
+      currentMainPage = page;
+      const pages = ['expenses', 'bucket', 'wishlist'];
+      pages.forEach(p => {
+        const el = document.getElementById(`page_${p}`);
+        const tab = document.getElementById(`mainTab_${p}`);
+        if (p === page) {
+          el.classList.remove('hidden');
+          tab.className = 'flex-1 lg:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-white text-slate-900 shadow-2xs';
+        } else {
+          el.classList.add('hidden');
+          tab.className = 'flex-1 lg:flex-initial px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900';
+        }
+      });
+      if (page === 'expenses') {
+        renderAll();
+      } else if (page === 'bucket') {
+        renderBucketList();
+      } else if (page === 'wishlist') {
+        renderWishlist();
+      }
+    }
+
+    /*************************************************************************
+     * BUCKET LIST LOGIC
+     *************************************************************************/
+    function selectBucketProposer(who) {
+      currentBucketProposer = who;
+      ['Both', 'A', 'Y'].forEach(k => {
+        const btn = document.getElementById(`bucketProp_${k}`);
+        if (!btn) return;
+        if (k === who) {
+          btn.className = 'py-2 px-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-950 font-bold text-xs transition shadow-2xs';
+        } else {
+          btn.className = 'py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-bold text-xs transition';
+        }
+      });
+    }
+
+    function setBucketStatusFilter(filter) {
+      currentBucketStatusFilter = filter;
+      ['ALL', 'TODO', 'DONE'].forEach(k => {
+        const btn = document.getElementById(`bucketFilter_${k}`);
+        if (k === filter) {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs transition';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+      renderBucketList();
+    }
+
+    function handleAddBucketItem(e) {
+      e.preventDefault();
+      const title = document.getElementById('bucketTitle').value.trim();
+      const category = document.getElementById('bucketCategory').value;
+      const location = document.getElementById('bucketLocation').value.trim();
+      const season = document.getElementById('bucketSeason').value.trim();
+      const notes = document.getElementById('bucketNotes').value.trim();
+      if (!title) return;
+
+      appState.bucketList.unshift({
+        id: 'b_' + Date.now() + Math.random().toString(36).slice(2, 5),
+        title,
+        category,
+        proposer: currentBucketProposer,
+        location,
+        season,
+        notes,
+        completed: false,
+        favorite: false
+      });
+
+      document.getElementById('bucketTitle').value = '';
+      document.getElementById('bucketLocation').value = '';
+      document.getElementById('bucketSeason').value = '';
+      document.getElementById('bucketNotes').value = '';
+
+      saveStateToStorage();
+      renderBucketList();
+      showToast('Added dream to Bucket List!', 'emerald');
+    }
+
+    function toggleBucketDone(id) {
+      const item = appState.bucketList.find(b => b.id === id);
+      if (!item) return;
+      item.completed = !item.completed;
+      item.completedDate = item.completed ? formatDateISO(new Date()) : null;
+      saveStateToStorage();
+      renderBucketList();
+      if (item.completed) showToast('Bucket list dream completed! 🎉', 'emerald');
+    }
+
+    function toggleBucketFav(id) {
+      const item = appState.bucketList.find(b => b.id === id);
+      if (!item) return;
+      item.favorite = !item.favorite;
+      saveStateToStorage();
+      renderBucketList();
+    }
+
+    function deleteBucketItem(id) {
+      appState.bucketList = appState.bucketList.filter(b => b.id !== id);
+      saveStateToStorage();
+      renderBucketList();
+      showToast('Bucket list item removed', 'slate');
+    }
+
+    function renderBucketList() {
+      ensureStateArrays();
+      const list = appState.bucketList;
+      const doneCount = list.filter(b => b.completed).length;
+      const todoCount = list.length - doneCount;
+
+      document.getElementById('bucketStatTotal').textContent = list.length;
+      document.getElementById('bucketStatDone').textContent = doneCount;
+      document.getElementById('navBadgeBucket').textContent = todoCount;
+
+      const catFilter = document.getElementById('bucketCategoryFilter') ? document.getElementById('bucketCategoryFilter').value : 'ALL';
+
+      const filtered = list.filter(item => {
+        if (currentBucketStatusFilter === 'TODO' && item.completed) return false;
+        if (currentBucketStatusFilter === 'DONE' && !item.completed) return false;
+        if (catFilter !== 'ALL' && item.category !== catFilter) return false;
+        return true;
+      });
+
+      const container = document.getElementById('bucketListContainer');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400 text-sm">
+            <i class="fa-regular fa-compass text-2xl mb-2 block text-slate-300"></i>
+            No bucket list dreams match this filter yet. Add one on the left!
+          </div>
+        `;
+        return;
+      }
+
+      const catBadgeMap = {
+        'Place to Visit': 'bg-sky-100 text-sky-800',
+        'Activity to Do': 'bg-emerald-100 text-emerald-800',
+        'Thing to Try': 'bg-purple-100 text-purple-800',
+        'Food / Restaurant': 'bg-orange-100 text-orange-800'
+      };
+
+      container.innerHTML = filtered.map(item => {
+        const badgeStyle = catBadgeMap[item.category] || 'bg-slate-100 text-slate-700';
+        const propBadge = item.proposer === 'A'
+          ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+          : item.proposer === 'Y'
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            : 'bg-amber-50 text-amber-800 border-amber-200';
+
+        return `
+          <div class="p-4 rounded-2xl border transition flex flex-col justify-between ${item.completed ? 'bg-emerald-50/40 border-emerald-200/80' : 'bg-white border-slate-200/80 hover:border-slate-300'}">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${badgeStyle}">${escapeHtml(item.category)}</span>
+                <div class="flex items-center gap-1">
+                  <button onclick="toggleBucketFav('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-amber-50 flex items-center justify-center transition ${item.favorite ? 'text-amber-500' : 'text-slate-300'}" title="Favorite">
+                    <i class="fa-solid fa-star text-xs"></i>
+                  </button>
+                  <button onclick="deleteBucketItem('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-rose-50 text-slate-300 hover:text-rose-600 flex items-center justify-center transition" title="Delete">
+                    <i class="fa-regular fa-trash-can text-xs"></i>
+                  </button>
+                </div>
+              </div>
+
+              <h4 class="font-bold text-slate-900 text-base ${item.completed ? 'line-through text-slate-500' : ''}">${escapeHtml(item.title)}</h4>
+
+              <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-500">
+                ${item.location ? `<span class="inline-flex items-center gap-1"><i class="fa-solid fa-location-dot text-rose-500"></i> ${escapeHtml(item.location)}</span>` : ''}
+                ${item.season ? `<span class="inline-flex items-center gap-1"><i class="fa-regular fa-calendar text-indigo-500"></i> ${escapeHtml(item.season)}</span>` : ''}
+              </div>
+
+              ${item.notes ? `<p class="mt-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">${escapeHtml(item.notes)}</p>` : ''}
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${propBadge}">
+                Idea by: ${escapeHtml(item.proposer)}
+              </span>
+
+              <button onclick="toggleBucketDone('${item.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${item.completed ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700'}">
+                <i class="fa-solid ${item.completed ? 'fa-circle-check' : 'fa-regular fa-circle'}"></i>
+                <span>${item.completed ? 'Completed! 🎉' : 'Mark Done'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /*************************************************************************
+     * "I WANT IT" WISHLIST LOGIC
+     *************************************************************************/
+    function selectWishOwner(owner) {
+      currentWishOwner = owner;
+      ['A', 'Y', 'Both'].forEach(k => {
+        const btn = document.getElementById(`wishWho_${k}`);
+        if (!btn) return;
+        if (k === owner) {
+          btn.className = 'py-2 px-3 rounded-xl border-2 border-rose-600 bg-rose-50 text-rose-950 font-bold text-xs transition shadow-2xs';
+        } else {
+          btn.className = 'py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-bold text-xs transition';
+        }
+      });
+    }
+
+    function setWishOwnerFilter(filter) {
+      currentWishOwnerFilter = filter;
+      ['ALL', 'A', 'Y', 'Both'].forEach(k => {
+        const btn = document.getElementById(`wishFilter_${k}`);
+        if (k === filter) {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs transition';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+      renderWishlist();
+    }
+
+    function handleAddWishItem(e) {
+      e.preventDefault();
+      const title = document.getElementById('wishTitle').value.trim();
+      const price = Math.max(0, parseFloat(document.getElementById('wishPrice').value) || 0);
+      const priority = document.getElementById('wishPriority').value;
+      const link = document.getElementById('wishLink').value.trim();
+      const notes = document.getElementById('wishNotes').value.trim();
+      if (!title) return;
+
+      appState.wishlist.unshift({
+        id: 'w_' + Date.now() + Math.random().toString(36).slice(2, 5),
+        title,
+        owner: currentWishOwner,
+        price: Math.round(price * 100) / 100,
+        priority,
+        link,
+        notes,
+        bought: false
+      });
+
+      document.getElementById('wishTitle').value = '';
+      document.getElementById('wishPrice').value = '';
+      document.getElementById('wishLink').value = '';
+      document.getElementById('wishNotes').value = '';
+
+      saveStateToStorage();
+      renderWishlist();
+      showToast(`Added "${title}" to I Want It!`, 'rose');
+    }
+
+    function toggleWishBought(id) {
+      const item = appState.wishlist.find(w => w.id === id);
+      if (!item) return;
+      item.bought = !item.bought;
+      saveStateToStorage();
+      renderWishlist();
+      if (item.bought) showToast('Marked as Bought / Got It! 🛍️', 'emerald');
+    }
+
+    function deleteWishItem(id) {
+      appState.wishlist = appState.wishlist.filter(w => w.id !== id);
+      saveStateToStorage();
+      renderWishlist();
+      showToast('Wishlist item deleted', 'slate');
+    }
+
+    function renderWishlist() {
+      ensureStateArrays();
+      const list = appState.wishlist;
+      const activeWishes = list.filter(w => !w.bought);
+
+      document.getElementById('navBadgeWishlist').textContent = activeWishes.length;
+
+      // Calculate totals per person (unbought items)
+      const listA = activeWishes.filter(w => w.owner === 'A');
+      const listY = activeWishes.filter(w => w.owner === 'Y');
+      const listBoth = activeWishes.filter(w => w.owner === 'Both');
+
+      const sumA = listA.reduce((s, w) => s + (w.price || 0), 0);
+      const sumY = listY.reduce((s, w) => s + (w.price || 0), 0);
+      const sumBoth = listBoth.reduce((s, w) => s + (w.price || 0), 0);
+
+      document.getElementById('wishTotalA').textContent = `€${sumA.toFixed(2)}`;
+      document.getElementById('wishCountA').textContent = `${listA.length} active ${listA.length === 1 ? 'wish' : 'wishes'}`;
+
+      document.getElementById('wishTotalY').textContent = `€${sumY.toFixed(2)}`;
+      document.getElementById('wishCountY').textContent = `${listY.length} active ${listY.length === 1 ? 'wish' : 'wishes'}`;
+
+      document.getElementById('wishTotalBoth').textContent = `€${sumBoth.toFixed(2)}`;
+      document.getElementById('wishCountBoth').textContent = `${listBoth.length} shared ${listBoth.length === 1 ? 'wish' : 'wishes'}`;
+
+      const statusFilter = document.getElementById('wishStatusFilter') ? document.getElementById('wishStatusFilter').value : 'ALL';
+
+      const filtered = list.filter(item => {
+        if (currentWishOwnerFilter !== 'ALL' && item.owner !== currentWishOwnerFilter) return false;
+        if (statusFilter === 'WISH' && item.bought) return false;
+        if (statusFilter === 'BOUGHT' && !item.bought) return false;
+        return true;
+      });
+
+      const container = document.getElementById('wishlistContainer');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400 text-sm">
+            <i class="fa-solid fa-gift text-2xl mb-2 block text-slate-300"></i>
+            No "I Want It" items match this filter yet.
+          </div>
+        `;
+        return;
+      }
+
+      const prioStyle = {
+        'Must Have': 'bg-rose-100 text-rose-800',
+        'Nice to Have': 'bg-indigo-100 text-indigo-800',
+        'Someday': 'bg-slate-100 text-slate-700'
+      };
+
+      container.innerHTML = filtered.map(item => {
+        const ownerBadge = item.owner === 'A'
+          ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+          : item.owner === 'Y'
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            : 'bg-rose-50 text-rose-700 border-rose-200';
+
+        return `
+          <div class="p-4 rounded-2xl border transition flex flex-col justify-between ${item.bought ? 'bg-emerald-50/40 border-emerald-200/80' : 'bg-white border-slate-200/80 hover:border-slate-300'}">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${ownerBadge}">
+                  Wanted by: ${escapeHtml(item.owner)}
+                </span>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${prioStyle[item.priority] || 'bg-slate-100'}">${escapeHtml(item.priority)}</span>
+                  <button onclick="deleteWishItem('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-rose-50 text-slate-300 hover:text-rose-600 flex items-center justify-center transition">
+                    <i class="fa-regular fa-trash-can text-xs"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-baseline justify-between gap-2">
+                <h4 class="font-bold text-slate-900 text-base ${item.bought ? 'line-through text-slate-500' : ''}">${escapeHtml(item.title)}</h4>
+                <span class="text-base font-extrabold text-slate-900 shrink-0">€${Number(item.price || 0).toFixed(2)}</span>
+              </div>
+
+              ${item.notes ? `<p class="mt-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">${escapeHtml(item.notes)}</p>` : ''}
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Open Link</a>` : `<span class="text-xs text-slate-400">No link</span>`}
+
+              <button onclick="toggleWishBought('${item.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${item.bought ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700'}">
+                <i class="fa-solid ${item.bought ? 'fa-bag-shopping' : 'fa-check'}"></i>
+                <span>${item.bought ? 'Got It! 🛍️' : 'Mark Bought'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /*************************************************************************
+     * CUSTOM FIREBASE CONFIG SAVER & MAGIC LINK GENERATOR (FOR GITHUB PAGES)
+     *************************************************************************/
+    function saveCustomFirebaseConfig() {
+      const raw = document.getElementById('customFirebaseConfigInput').value.trim();
+      if (!raw) {
+        showToast('Please paste your Firebase config JSON first', 'rose');
+        return;
+      }
+      try {
+        // Support pasting either strict JSON or JS object literal
+        let cleaned = raw;
+        if (cleaned.includes('firebaseConfig') && cleaned.includes('{')) {
+          cleaned = cleaned.substring(cleaned.indexOf('{'), cleaned.lastIndexOf('}') + 1);
+        }
+        // Convert unquoted keys if user pasted JS snippet
+        cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+        const parsed = JSON.parse(cleaned);
+        if (!parsed.apiKey || !parsed.projectId) {
+          showToast('Config must include apiKey and projectId', 'rose');
+          return;
+        }
+        localStorage.setItem(CUSTOM_FIREBASE_KEY, JSON.stringify(parsed));
+        showToast('Cloud config saved! Connecting...', 'emerald');
+        if (typeof window.initCloudSync === 'function') {
+          window.initCloudSync();
+        }
+      } catch (e) {
+        showToast('Invalid JSON format. Check your pasted config.', 'rose');
+      }
+    }
+
+    function clearCustomFirebaseConfig() {
+      localStorage.removeItem(CUSTOM_FIREBASE_KEY);
+      document.getElementById('customFirebaseConfigInput').value = '';
+      showToast('Custom Firebase config cleared', 'slate');
+      if (typeof window.initCloudSync === 'function') {
+        window.initCloudSync();
+      }
+    }
+
+    function copyMagicCloudLink() {
+      const savedFb = localStorage.getItem(CUSTOM_FIREBASE_KEY);
+      if (!savedFb) {
+        showToast('Paste & Save your Firebase config below first to create a Magic Link for Y!', 'rose');
+        return;
+      }
+      const encoded = btoa(unescape(encodeURIComponent(savedFb)));
+      const baseUrl = window.location.href.split('#')[0];
+      const magicUrl = `${baseUrl}#firebase=${encoded}`;
+
+      const tempInput = document.createElement('textarea');
+      tempInput.value = magicUrl;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      showToast('1-Click Magic Setup Link copied! Send it to Y.', 'emerald');
+    }
+  </script>
+
+  <!-- Real-Time Firebase Cloud Synchronization Module -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let unsubscribeSnapshot = null;
+    let isApplyingRemoteUpdate = false;
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'money-always-funny-ay';
+
+    function updateCloudBadge(status, message, uidText) {
+      const badge = document.getElementById('cloudStatusBadge');
+      const dot = document.getElementById('cloudStatusDot');
+      const text = document.getElementById('cloudStatusText');
+
+      const modalDot = document.getElementById('modalCloudDot');
+      const modalTitle = document.getElementById('modalCloudTitle');
+      const uidEl = document.getElementById('currentUserIdDisplay');
+
+      if (uidEl && uidText) uidEl.textContent = uidText;
+
+      if (status === 'connected') {
+        badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        text.textContent = message || 'Cloud Synced Live';
+        if (modalDot) modalDot.className = 'w-3 h-3 rounded-full bg-emerald-500';
+        if (modalTitle) modalTitle.textContent = 'Connected to Real-Time Cloud! (A & Y Live Sync Active)';
+      } else if (status === 'local') {
+        badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 cursor-pointer hover:bg-amber-100 transition';
+        dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        text.textContent = message || 'Local Mode (Click for GitHub Cloud)';
+        if (modalDot) modalDot.className = 'w-3 h-3 rounded-full bg-amber-500';
+        if (modalTitle) modalTitle.textContent = 'Local Browser Mode — Paste Free Firebase Config Below for GitHub Sync';
+      }
+    }
+
+    function resolveFirebaseConfig() {
+      // 1. User-supplied custom Firebase config (ideal for GitHub Pages)
+      try {
+        const customRaw = localStorage.getItem('mmaf_custom_firebase_config_v1');
+        if (customRaw) {
+          const parsed = JSON.parse(customRaw);
+          if (parsed && parsed.apiKey && parsed.projectId) return parsed;
+        }
+      } catch (e) {}
+
+      // 2. Environment __firebase_config
+      try {
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          return JSON.parse(__firebase_config);
+        }
+      } catch (e) {}
+
+      return null;
+    }
+
+    async function initCloudSync() {
+      const fbConfig = resolveFirebaseConfig();
+      if (!fbConfig) {
+        updateCloudBadge('local', 'Local Mode · Setup Cloud', 'Not connected (Local storage active)');
+        return;
+      }
+
+      try {
+        const appName = 'mmafApp_' + (fbConfig.projectId || 'default');
+        const existingApp = getApps().find(a => a.name === appName);
+        const app = existingApp || initializeApp(fbConfig, appName);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // RULE 3: Auth Before Queries
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !localStorage.getItem('mmaf_custom_firebase_config_v1')) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+          currentUser = user;
+          if (!user) return;
+
+          updateCloudBadge('connected', 'Cloud Synced Live', user.uid);
+
+          // RULE 1: Strict Paths (/artifacts/{appId}/public/data/{collectionName}/{docId})
+          const sharedDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedTracker', 'mainState');
+
+          if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+          unsubscribeSnapshot = onSnapshot(
+            sharedDocRef,
+            (snapshot) => {
+              if (snapshot.exists()) {
+                const cloudData = snapshot.data();
+                if (cloudData && cloudData.payload) {
+                  try {
+                    const parsed = JSON.parse(cloudData.payload);
+                    isApplyingRemoteUpdate = true;
+                    appState = parsed;
+                    ensureStateArrays();
+                    localStorage.setItem('mmaf_tracker_state_v2', JSON.stringify(appState));
+                    syncInputsFromState();
+                    renderAll();
+                    isApplyingRemoteUpdate = false;
+                  } catch (e) {
+                    console.warn('Error parsing cloud payload:', e);
+                  }
+                }
+              } else {
+                // First time initializing cloud document with current local state
+                window.pushStateToCloud(appState);
+              }
+            },
+            (error) => {
+              console.warn('Firestore snapshot error:', error);
+              updateCloudBadge('local', 'Local Mode (Cloud Permission/Offline)', 'Offline fallback');
+            }
+          );
+        });
+      } catch (err) {
+        console.warn('Firebase initialization fallback to local:', err);
+        updateCloudBadge('local', 'Local Mode · Setup Cloud', 'Local mode');
+      }
+    }
+
+    window.pushStateToCloud = async function(stateObj) {
+      if (isApplyingRemoteUpdate || !db || !currentUser) return;
+      try {
+        const sharedDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedTracker', 'mainState');
+        await setDoc(sharedDocRef, {
+          payload: JSON.stringify(stateObj),
+          updatedAt: Date.now(),
+          updatedBy: currentUser.uid
+        });
+      } catch (err) {
+        console.warn('Failed to push update to cloud:', err);
+      }
+    };
+
+    window.initCloudSync = initCloudSync;
+    initCloudSync();
+  </script>
+</body>
+</html>
