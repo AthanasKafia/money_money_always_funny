@@ -108,6 +108,10 @@
 
       <!-- Backup Export Utility -->
       <div class="flex items-center gap-2 order-2 lg:order-3">
+        <button onclick="openTripModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-2xs cursor-pointer" title="Create a new Trip or Space">
+          <i class="fa-solid fa-folder-plus"></i>
+          <span>+ New Trip / Roof</span>
+        </button>
         <button onclick="exportDataJson()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition border border-slate-200 shadow-2xs" title="Download JSON Backup">
           <i class="fa-solid fa-download text-slate-400"></i>
           <span class="hidden sm:inline">Backup JSON</span>
@@ -115,6 +119,98 @@
       </div>
     </div>
   </header>
+
+  <!-- ===================================================================== -->
+  <!-- "UNDER ONE ROOF" TRIP / SPACE SELECTOR BAR                            -->
+  <!-- ===================================================================== -->
+  <div class="bg-white/65 backdrop-blur-md border-b border-slate-200/70">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 flex-wrap flex-1 min-w-0">
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-house-chimney-window text-indigo-500"></i> Under One Roof:
+        </span>
+        <!-- Dynamic Trip Pills -->
+        <div id="tripPillsContainer" class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 max-w-full"></div>
+      </div>
+
+      <!-- Active Roof Context Actions -->
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="activeRoofSummaryBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60"></span>
+        <button type="button" id="editActiveTripBtn" onclick="openTripModal(currentTripId)" class="hidden px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-semibold transition items-center gap-1" title="Edit or Delete this Trip">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span class="hidden md:inline">Edit Roof</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE / EDIT TRIP ("ROOF") -->
+  <div id="tripModalBackdrop" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="soft-card bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+            <i class="fa-solid fa-suitcase-rolling"></i>
+          </span>
+          <div>
+            <h3 id="tripModalTitle" class="text-base font-extrabold text-slate-900">Create New Trip / Roof</h3>
+            <p class="text-xs text-slate-500">Group expenses, bucket list &amp; wishes under one roof</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeTripModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveTrip(event)" class="space-y-4">
+        <input type="hidden" id="tripModalEditId" value="" />
+        <div class="grid grid-cols-4 gap-3">
+          <div class="col-span-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Icon</label>
+            <select id="tripModalIcon" class="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-base text-center focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="🇸🇮">🇸🇮</option>
+              <option value="✈️">✈️</option>
+              <option value="🏔️">🏔️</option>
+              <option value="🏖️">🏖️</option>
+              <option value="🚗">🚗</option>
+              <option value="🏠">🏠</option>
+              <option value="🇮🇹">🇮🇹</option>
+              <option value="🇦🇱">🇦🇱</option>
+              <option value="🇧🇪">🇧🇪</option>
+              <option value="🌍">🌍</option>
+              <option value="🎄">🎄</option>
+              <option value="❤️">❤️</option>
+            </select>
+          </div>
+          <div class="col-span-3">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Trip / Roof Name</label>
+            <input type="text" id="tripModalName" required placeholder="e.g., Ljubljana, Tirana, Everyday..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Start Date (Optional)</label>
+            <input type="date" id="tripModalStart" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">End Date (Optional)</label>
+            <input type="date" id="tripModalEnd" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 gap-2">
+          <button type="button" id="tripModalDeleteBtn" onclick="handleDeleteTrip()" class="hidden px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs transition items-center gap-1.5">
+            <i class="fa-regular fa-trash-can"></i> Delete Roof
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeTripModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">Cancel</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition">Save Roof</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Main Content Container -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
@@ -379,6 +475,12 @@
                 <input type="text" id="expenseNote" placeholder="e.g., Flights, Hotel booking, Dinner..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
 
+              <!-- Roof / Trip Assignment -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">6. Trip / Roof</label>
+                <select id="expenseTripSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-indigo-50/60 border border-indigo-200 text-xs font-bold text-indigo-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+              </div>
+
               <button type="submit" id="submitExpenseBtn" class="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
                 <i class="fa-solid fa-plus-circle"></i>
                 <span>Add Expense</span>
@@ -524,6 +626,7 @@
             <thead>
               <tr class="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 <th class="py-3 px-3">Date</th>
+                <th class="py-3 px-3">Trip / Roof</th>
                 <th class="py-3 px-3">Who Paid</th>
                 <th class="py-3 px-3">Type</th>
                 <th class="py-3 px-3">Description</th>
@@ -609,6 +712,11 @@
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Location / Notes (Optional)</label>
               <textarea id="bucketNotes" rows="3" placeholder="Location, best season to go, or special notes..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Trip / Roof</label>
+              <select id="bucketTripSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs font-bold text-emerald-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
             </div>
 
             <button type="submit" class="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
@@ -728,6 +836,11 @@
               <input type="text" id="wishNotes" placeholder="Any details, size, model..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
             </div>
 
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Trip / Roof</label>
+              <select id="wishTripSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-rose-50/60 border border-rose-200 text-xs font-bold text-rose-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500"></select>
+            </div>
+
             <button type="submit" class="w-full py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
               <i class="fa-solid fa-heart-circle-plus"></i>
               <span>Add to "I Want It"</span>
@@ -806,20 +919,40 @@
     // Clean, empty initial state (no sample data)
     const todayStr = formatDateISO(new Date());
 
-    let appState = {
-      config: {
+    const DEFAULT_ROOF = {
+      id: 'general',
+      name: 'General / Everyday',
+      icon: '🏠',
+      startDate: '',
+      endDate: ''
+    };
+
+    function createDefaultBudgetConfig() {
+      return {
         startDate: todayStr,
         endDate: todayStr,
-        filterByDate: false, // Default to showing All Dates so new expenses are always visible immediately
-        budgetMode: 'both',  // 'both' | 'combined' | 'independent'
+        filterByDate: false,
+        budgetMode: 'both',
         budgetAthanas: 0,
         budgetYousra: 0,
         budgetCombined: 0
+      };
+    }
+
+    let appState = {
+      trips: [DEFAULT_ROOF],
+      budgetsByTrip: {
+        ALL: createDefaultBudgetConfig(),
+        general: createDefaultBudgetConfig()
       },
+      config: createDefaultBudgetConfig(),
       expenses: [],
       bucketList: [],
       wishlist: []
     };
+
+    // Active Trip / Roof ID ('ALL' = Global Overview across all roofs, or a specific tripId like 'general' or 'ljubljana')
+    let currentTripId = localStorage.getItem('mm_active_trip_id') || 'general';
 
     let currentMainPage = 'expenses';
     let currentPayerSelection = 'Athanas';
@@ -837,6 +970,224 @@
       Athanas: null,
       Yousra: null
     };
+
+    /*************************************************************************
+     * "UNDER ONE ROOF" TRIP / SPACE HELPERS
+     *************************************************************************/
+    function getTripById(tripId) {
+      if (tripId === 'ALL') return { id: 'ALL', name: 'All Trips (Overview)', icon: '🌍' };
+      return appState.trips.find(t => t.id === tripId) || DEFAULT_ROOF;
+    }
+
+    function ensureActiveTripValid() {
+      if (currentTripId !== 'ALL' && !appState.trips.some(t => t.id === currentTripId)) {
+        currentTripId = appState.trips[0]?.id || 'general';
+      }
+      // Load the active trip's budget config into appState.config
+      if (!appState.budgetsByTrip[currentTripId]) {
+        const tripObj = getTripById(currentTripId);
+        const cfg = createDefaultBudgetConfig();
+        if (tripObj.startDate && tripObj.endDate) {
+          cfg.startDate = tripObj.startDate;
+          cfg.endDate = tripObj.endDate;
+        }
+        appState.budgetsByTrip[currentTripId] = cfg;
+      }
+      appState.config = appState.budgetsByTrip[currentTripId];
+    }
+
+    function selectActiveTrip(tripId) {
+      currentTripId = tripId;
+      localStorage.setItem('mm_active_trip_id', tripId);
+      ensureActiveTripValid();
+      renderTripNavigation();
+      syncInputsFromState();
+      renderAll();
+      renderBucketList();
+      renderWishlist();
+    }
+
+    function renderTripNavigation() {
+      const pillsContainer = document.getElementById('tripPillsContainer');
+      if (!pillsContainer) return;
+
+      const allCount = appState.expenses.length + appState.bucketList.length + appState.wishlist.length;
+      const pillsHtml = [];
+
+      // 1. "All Trips (Global View)" Pill
+      const isAllActive = currentTripId === 'ALL';
+      pillsHtml.push(`
+        <button type="button" onclick="selectActiveTrip('ALL')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer ${isAllActive ? 'bg-slate-900 text-white shadow-xs' : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80'}">
+          <span>🌍</span>
+          <span>All Trips (Overview)</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px] ${isAllActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}">${allCount}</span>
+        </button>
+      `);
+
+      // 2. Individual Trip / Roof Pills
+      appState.trips.forEach(trip => {
+        const isActive = currentTripId === trip.id;
+        const expCount = appState.expenses.filter(e => (e.tripId || 'general') === trip.id).length;
+        const buckCount = appState.bucketList.filter(b => (b.tripId || 'general') === trip.id).length;
+        const wishCount = appState.wishlist.filter(w => (w.tripId || 'general') === trip.id).length;
+        const totalItems = expCount + buckCount + wishCount;
+
+        pillsHtml.push(`
+          <button type="button" onclick="selectActiveTrip('${escapeHtml(trip.id)}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer ${isActive ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white hover:bg-indigo-50/60 text-slate-700 border border-slate-200/80'}">
+            <span>${escapeHtml(trip.icon || '✈️')}</span>
+            <span>${escapeHtml(trip.name)}</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}">${totalItems}</span>
+          </button>
+        `);
+      });
+
+      pillsContainer.innerHTML = pillsHtml.join('');
+
+      // Active roof badge & edit button visibility
+      const activeTrip = getTripById(currentTripId);
+      const badgeEl = document.getElementById('activeRoofSummaryBadge');
+      const editBtn = document.getElementById('editActiveTripBtn');
+
+      if (badgeEl) {
+        badgeEl.innerHTML = `<span>${escapeHtml(activeTrip.icon)}</span> <span>Active Roof: ${escapeHtml(activeTrip.name)}</span>`;
+      }
+      if (editBtn) {
+        if (currentTripId !== 'ALL' && currentTripId !== 'general') {
+          editBtn.classList.remove('hidden');
+          editBtn.classList.add('inline-flex');
+        } else {
+          editBtn.classList.add('hidden');
+          editBtn.classList.remove('inline-flex');
+        }
+      }
+
+      // Populate Trip dropdowns inside the 3 forms (Expenses, Bucket List, I Want It)
+      const targetDefaultTrip = currentTripId === 'ALL' ? (appState.trips[0]?.id || 'general') : currentTripId;
+      ['expenseTripSelect', 'bucketTripSelect', 'wishTripSelect'].forEach(selectId => {
+        const sel = document.getElementById(selectId);
+        if (!sel) return;
+        sel.innerHTML = appState.trips.map(t =>
+          `<option value="${escapeHtml(t.id)}" ${t.id === targetDefaultTrip ? 'selected' : ''}>${escapeHtml(t.icon || '✈️')} ${escapeHtml(t.name)}</option>`
+        ).join('');
+      });
+    }
+
+    function openTripModal(editId = '') {
+      const modal = document.getElementById('tripModalBackdrop');
+      const titleEl = document.getElementById('tripModalTitle');
+      const idInput = document.getElementById('tripModalEditId');
+      const iconInput = document.getElementById('tripModalIcon');
+      const nameInput = document.getElementById('tripModalName');
+      const startInput = document.getElementById('tripModalStart');
+      const endInput = document.getElementById('tripModalEnd');
+      const delBtn = document.getElementById('tripModalDeleteBtn');
+
+      if (editId && editId !== 'ALL' && editId !== 'general') {
+        const existing = getTripById(editId);
+        titleEl.textContent = `Edit "${existing.name}" Roof`;
+        idInput.value = existing.id;
+        iconInput.value = existing.icon || '🇸🇮';
+        nameInput.value = existing.name || '';
+        startInput.value = existing.startDate || '';
+        endInput.value = existing.endDate || '';
+        delBtn.classList.remove('hidden');
+        delBtn.classList.add('inline-flex');
+      } else {
+        titleEl.textContent = 'Create New Trip / Roof';
+        idInput.value = '';
+        iconInput.value = '🇸🇮';
+        nameInput.value = '';
+        startInput.value = '';
+        endInput.value = '';
+        delBtn.classList.add('hidden');
+        delBtn.classList.remove('inline-flex');
+      }
+
+      modal.classList.remove('hidden');
+      nameInput.focus();
+    }
+
+    function closeTripModal() {
+      document.getElementById('tripModalBackdrop').classList.add('hidden');
+    }
+
+    async function handleSaveTrip(e) {
+      e.preventDefault();
+      const editId = document.getElementById('tripModalEditId').value.trim();
+      const icon = document.getElementById('tripModalIcon').value || '✈️';
+      const name = document.getElementById('tripModalName').value.trim();
+      const startDate = document.getElementById('tripModalStart').value || '';
+      const endDate = document.getElementById('tripModalEnd').value || '';
+      if (!name) return;
+
+      const tripId = editId || ('trip_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_' + Date.now().toString().slice(-4));
+
+      const tripData = {
+        id: tripId,
+        name,
+        icon,
+        startDate,
+        endDate,
+        updatedAt: Date.now()
+      };
+
+      closeTripModal();
+
+      try {
+        await setDoc(doc(db, 'trips', tripId), tripData, { merge: true });
+        if (!editId && startDate && endDate) {
+          const initialBudget = {
+            ...createDefaultBudgetConfig(),
+            startDate,
+            endDate,
+            filterByDate: false
+          };
+          await setDoc(doc(db, 'settings', `budget_${tripId}`), initialBudget, { merge: true });
+        }
+        selectActiveTrip(tripId);
+        showToast(`Roof "${icon} ${name}" is ready!`, 'indigo');
+      } catch (err) {
+        console.error('Error saving trip:', err);
+        showToast('Could not save Trip to cloud', 'rose');
+      }
+    }
+
+    async function handleDeleteTrip() {
+      const editId = document.getElementById('tripModalEditId').value.trim();
+      if (!editId || editId === 'general') return;
+
+      closeTripModal();
+      try {
+        // Reassign any items under this deleted roof to 'general' so nothing is lost
+        const expToMove = appState.expenses.filter(e => e.tripId === editId);
+        for (const exp of expToMove) {
+          await updateDoc(doc(db, 'expenses', exp.id), { tripId: 'general' });
+        }
+        const buckToMove = appState.bucketList.filter(b => b.tripId === editId);
+        for (const b of buckToMove) {
+          await updateDoc(doc(db, 'bucket_list', b.id), { tripId: 'general' });
+        }
+        const wishToMove = appState.wishlist.filter(w => w.tripId === editId);
+        for (const w of wishToMove) {
+          await updateDoc(doc(db, 'wishlist', w.id), { tripId: 'general' });
+        }
+        await deleteDoc(doc(db, 'trips', editId));
+        selectActiveTrip('general');
+        showToast('Roof deleted (items safely moved to General)', 'slate');
+      } catch (err) {
+        console.error('Error deleting trip:', err);
+      }
+    }
+
+    async function moveItemToTrip(collectionName, itemId, newTripId) {
+      try {
+        await updateDoc(doc(db, collectionName, itemId), { tripId: newTripId });
+        const targetTrip = getTripById(newTripId);
+        showToast(`Moved to ${targetTrip.icon} ${targetTrip.name}`, 'indigo');
+      } catch (err) {
+        console.error('Error moving item to trip:', err);
+      }
+    }
 
     /*************************************************************************
      * CLOUD STATUS HELPER
@@ -861,6 +1212,34 @@
      * REAL-TIME FIRESTORE LISTENERS
      *************************************************************************/
     function startFirestoreListeners() {
+      // 0. Listen to 'trips' collection ("Under One Roof" folders)
+      onSnapshot(
+        collection(db, 'trips'),
+        (snapshot) => {
+          const loadedTrips = [DEFAULT_ROOF];
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (docSnap.id !== 'general') {
+              loadedTrips.push({
+                id: docSnap.id,
+                name: data.name || 'Trip',
+                icon: data.icon || '✈️',
+                startDate: data.startDate || '',
+                endDate: data.endDate || '',
+                updatedAt: data.updatedAt || 0
+              });
+            }
+          });
+          appState.trips = loadedTrips;
+          ensureActiveTripValid();
+          renderTripNavigation();
+          renderAll();
+          renderBucketList();
+          renderWishlist();
+        },
+        (err) => console.error('Trips listener error:', err)
+      );
+
       // 1. Listen to 'expenses' collection
       onSnapshot(
         collection(db, 'expenses'),
@@ -869,7 +1248,6 @@
           const loaded = [];
           snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            // Normalize legacy 'A'/'Y' if any existed
             let payer = data.payer || 'Athanas';
             if (payer === 'A') payer = 'Athanas';
             if (payer === 'Y') payer = 'Yousra';
@@ -879,10 +1257,12 @@
               category: data.category || 'Trip',
               amount: Number(data.amount) || 0,
               date: data.date || todayStr,
-              note: data.note || ''
+              note: data.note || '',
+              tripId: data.tripId || 'general'
             });
           });
           appState.expenses = loaded;
+          renderTripNavigation();
           renderAll();
         },
         (err) => {
@@ -908,11 +1288,13 @@
               proposer,
               notes: data.notes || '',
               completed: Boolean(data.completed),
+              tripId: data.tripId || 'general',
               createdAt: data.createdAt || 0
             });
           });
           loaded.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
           appState.bucketList = loaded;
+          renderTripNavigation();
           renderBucketList();
         },
         (err) => console.error('Bucket list listener error:', err)
@@ -937,23 +1319,25 @@
               link: data.link || '',
               notes: data.notes || '',
               bought: Boolean(data.bought),
+              tripId: data.tripId || 'general',
               createdAt: data.createdAt || 0
             });
           });
           loaded.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
           appState.wishlist = loaded;
+          renderTripNavigation();
           renderWishlist();
         },
         (err) => console.error('Wishlist listener error:', err)
       );
 
-      // 4. Listen to 'settings/budget' document
+      // 4. Listen to 'settings' collection (per-trip budgets + legacy 'budget' doc)
       onSnapshot(
-        doc(db, 'settings', 'budget'),
-        (docSnap) => {
-          if (docSnap.exists()) {
+        collection(db, 'settings'),
+        (snapshot) => {
+          snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            appState.config = {
+            const parsedCfg = {
               startDate: data.startDate || todayStr,
               endDate: data.endDate || todayStr,
               filterByDate: Boolean(data.filterByDate),
@@ -962,9 +1346,18 @@
               budgetYousra: Number(data.budgetYousra) || 0,
               budgetCombined: Number(data.budgetCombined) || 0
             };
-            syncInputsFromState();
-            renderAll();
-          }
+            if (docSnap.id === 'budget') {
+              // Preserve existing budget doc for 'general' and 'ALL' if not yet set
+              if (!appState.budgetsByTrip['general']) appState.budgetsByTrip['general'] = parsedCfg;
+              if (!appState.budgetsByTrip['ALL']) appState.budgetsByTrip['ALL'] = { ...parsedCfg };
+            } else if (docSnap.id.startsWith('budget_')) {
+              const tId = docSnap.id.replace('budget_', '');
+              appState.budgetsByTrip[tId] = parsedCfg;
+            }
+          });
+          ensureActiveTripValid();
+          syncInputsFromState();
+          renderAll();
         },
         (err) => console.error('Budget settings listener error:', err)
       );
@@ -972,7 +1365,9 @@
 
     async function saveBudgetConfigToCloud() {
       try {
-        await setDoc(doc(db, 'settings', 'budget'), appState.config, { merge: true });
+        appState.budgetsByTrip[currentTripId] = { ...appState.config };
+        const docId = currentTripId === 'general' ? 'budget' : `budget_${currentTripId}`;
+        await setDoc(doc(db, 'settings', docId), appState.config, { merge: true });
       } catch (err) {
         console.error('Error saving budget settings:', err);
         showToast('Could not save budget settings to cloud', 'rose');
@@ -1043,18 +1438,19 @@
     }
 
     function fitRangeToAllExpenses() {
-      if (appState.expenses.length === 0) {
+      const tripExpenses = getExpensesForActiveRoof();
+      if (tripExpenses.length === 0) {
         showAllDates();
         return;
       }
-      const dates = appState.expenses.map(e => e.date).sort();
+      const dates = tripExpenses.map(e => e.date).sort();
       appState.config.startDate = dates[0];
       appState.config.endDate = dates[dates.length - 1];
       appState.config.filterByDate = true;
       syncInputsFromState();
       renderAll();
       saveBudgetConfigToCloud();
-      showToast('Calendar fitted to your trip expenses', 'indigo');
+      showToast('Calendar fitted to this roof\'s expenses', 'indigo');
     }
 
     function setBudgetMode(mode) {
@@ -1117,6 +1513,7 @@
       const amountVal = parseFloat(document.getElementById('expenseAmount').value);
       const dateVal = document.getElementById('expenseDate').value;
       const noteVal = document.getElementById('expenseNote').value.trim();
+      const selectedTripId = document.getElementById('expenseTripSelect')?.value || (currentTripId === 'ALL' ? 'general' : currentTripId);
 
       if (!amountVal || amountVal <= 0 || !dateVal) return;
 
@@ -1126,6 +1523,7 @@
         amount: Math.round(amountVal * 100) / 100,
         date: dateVal,
         note: noteVal || `${currentCategorySelection} expense`,
+        tripId: selectedTripId,
         createdAt: Date.now()
       };
 
@@ -1134,7 +1532,8 @@
 
       try {
         await addDoc(collection(db, 'expenses'), newExp);
-        showToast(`Added €${newExp.amount.toFixed(2)} paid by ${newExp.payer}`, newExp.payer === 'Athanas' ? 'indigo' : 'rose');
+        const tripObj = getTripById(selectedTripId);
+        showToast(`Added €${newExp.amount.toFixed(2)} (${newExp.payer}) under ${tripObj.icon} ${tripObj.name}`, newExp.payer === 'Athanas' ? 'indigo' : 'rose');
       } catch (err) {
         console.error('Error adding expense:', err);
         showToast('Failed to save expense. Check Firestore Rules.', 'rose');
@@ -1153,10 +1552,16 @@
     /*************************************************************************
      * FILTERING, TOTALS & RENDER PIPELINE
      *************************************************************************/
+    function getExpensesForActiveRoof() {
+      if (currentTripId === 'ALL') return appState.expenses;
+      return appState.expenses.filter(exp => (exp.tripId || 'general') === currentTripId);
+    }
+
     function getFilteredExpensesByDate() {
+      const roofExpenses = getExpensesForActiveRoof();
       const { startDate, endDate, filterByDate } = appState.config;
-      if (!filterByDate) return appState.expenses;
-      return appState.expenses.filter(exp => {
+      if (!filterByDate) return roofExpenses;
+      return roofExpenses.filter(exp => {
         if (startDate && exp.date < startDate) return false;
         if (endDate && exp.date > endDate) return false;
         return true;
@@ -1673,11 +2078,12 @@
       const tbody = document.getElementById('expenseTableBody');
 
       if (filtered.length === 0) {
+        const activeRoof = getTripById(currentTripId);
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="py-12 text-center text-slate-400 text-sm">
+            <td colspan="7" class="py-12 text-center text-slate-400 text-sm">
               <i class="fa-solid fa-plane-up text-2xl mb-2 block text-slate-300"></i>
-              No expenses recorded in this date range yet. Add your first trip expense above! ✨
+              No expenses recorded under <strong>${escapeHtml(activeRoof.icon)} ${escapeHtml(activeRoof.name)}</strong> yet. Add your first expense above! ✨
             </td>
           </tr>
         `;
@@ -1686,13 +2092,23 @@
 
       tbody.innerHTML = filtered.map(exp => {
         const meta = CATEGORY_META[exp.category] || CATEGORY_META['Other activities'];
+        const expTripId = exp.tripId || 'general';
         const payerBadge = exp.payer === 'Athanas'
           ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60"><span class="w-2 h-2 rounded-full bg-indigo-600"></span>Athanas</span>`
           : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/60"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Yousra</span>`;
 
+        const tripOptions = appState.trips.map(t =>
+          `<option value="${escapeHtml(t.id)}" ${t.id === expTripId ? 'selected' : ''}>${escapeHtml(t.icon)} ${escapeHtml(t.name)}</option>`
+        ).join('');
+
         return `
           <tr class="hover:bg-slate-50/80 transition">
             <td class="py-3 px-3 font-medium text-slate-600 whitespace-nowrap">${exp.date}</td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <select onchange="moveItemToTrip('expenses', '${exp.id}', this.value)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 text-xs font-bold text-slate-700 border border-slate-200/80 focus:outline-none cursor-pointer" title="Move expense to another Trip / Roof">
+                ${tripOptions}
+              </select>
+            </td>
             <td class="py-3 px-3 whitespace-nowrap">${payerBadge}</td>
             <td class="py-3 px-3 whitespace-nowrap">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold ${meta.bg} ${meta.text}">
@@ -1767,6 +2183,7 @@
       const title = document.getElementById('bucketTitle').value.trim();
       const category = document.getElementById('bucketCategory').value;
       const notes = document.getElementById('bucketNotes').value.trim();
+      const selectedTripId = document.getElementById('bucketTripSelect')?.value || (currentTripId === 'ALL' ? 'general' : currentTripId);
       if (!title) return;
 
       document.getElementById('bucketTitle').value = '';
@@ -1779,9 +2196,11 @@
           proposer: currentBucketProposer,
           notes,
           completed: false,
+          tripId: selectedTripId,
           createdAt: Date.now()
         });
-        showToast('Added to Bucket List!', 'emerald');
+        const tripObj = getTripById(selectedTripId);
+        showToast(`Added to Bucket List under ${tripObj.icon} ${tripObj.name}!`, 'emerald');
       } catch (err) {
         console.error('Error adding bucket item:', err);
         showToast('Could not save Bucket List item', 'rose');
@@ -1809,17 +2228,20 @@
     }
 
     function renderBucketList() {
-      const list = appState.bucketList;
-      const doneCount = list.filter(b => b.completed).length;
-      const todoCount = list.length - doneCount;
+      const roofList = currentTripId === 'ALL'
+        ? appState.bucketList
+        : appState.bucketList.filter(b => (b.tripId || 'general') === currentTripId);
 
-      document.getElementById('bucketStatTotal').textContent = list.length;
+      const doneCount = roofList.filter(b => b.completed).length;
+      const todoCount = roofList.length - doneCount;
+
+      document.getElementById('bucketStatTotal').textContent = roofList.length;
       document.getElementById('bucketStatDone').textContent = doneCount;
       document.getElementById('navBadgeBucket').textContent = todoCount;
 
       const catFilter = document.getElementById('bucketCategoryFilter') ? document.getElementById('bucketCategoryFilter').value : 'ALL';
 
-      const filtered = list.filter(item => {
+      const filtered = roofList.filter(item => {
         if (currentBucketStatusFilter === 'TODO' && item.completed) return false;
         if (currentBucketStatusFilter === 'DONE' && !item.completed) return false;
         if (catFilter !== 'ALL' && item.category !== catFilter) return false;
@@ -1830,10 +2252,11 @@
       if (!container) return;
 
       if (filtered.length === 0) {
+        const activeRoof = getTripById(currentTripId);
         container.innerHTML = `
           <div class="col-span-full py-12 text-center text-slate-400 text-sm">
             <i class="fa-regular fa-compass text-2xl mb-2 block text-slate-300"></i>
-            Your Bucket List is empty — add your first adventure together! ✨
+            No Bucket List activities under <strong>${escapeHtml(activeRoof.icon)} ${escapeHtml(activeRoof.name)}</strong> yet — add your first adventure together! ✨
           </div>
         `;
         return;
@@ -1848,17 +2271,27 @@
 
       container.innerHTML = filtered.map(item => {
         const badgeStyle = catBadgeMap[item.category] || 'bg-slate-100 text-slate-700';
+        const itemTripId = item.tripId || 'general';
         const propBadge = item.proposer === 'Athanas'
           ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
           : item.proposer === 'Yousra'
             ? 'bg-rose-50 text-rose-700 border-rose-200'
             : 'bg-emerald-50 text-emerald-800 border-emerald-200';
 
+        const tripOptions = appState.trips.map(t =>
+          `<option value="${escapeHtml(t.id)}" ${t.id === itemTripId ? 'selected' : ''}>${escapeHtml(t.icon)} ${escapeHtml(t.name)}</option>`
+        ).join('');
+
         return `
           <div class="p-4 rounded-2xl border transition flex flex-col justify-between ${item.completed ? 'bg-emerald-50/40 border-emerald-200/80' : 'bg-white border-slate-200/80 hover:border-slate-300'}">
             <div>
               <div class="flex items-start justify-between gap-2 mb-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${badgeStyle}">${escapeHtml(item.category)}</span>
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${badgeStyle}">${escapeHtml(item.category)}</span>
+                  <select onchange="moveItemToTrip('bucket_list', '${item.id}', this.value)" class="px-2 py-0.5 rounded-full bg-slate-100 hover:bg-emerald-50 text-[11px] font-bold text-slate-700 border border-slate-200/80 focus:outline-none cursor-pointer" title="Assign to Trip / Roof">
+                    ${tripOptions}
+                  </select>
+                </div>
                 <button onclick="deleteBucketItem('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-rose-50 text-slate-300 hover:text-rose-600 flex items-center justify-center transition" title="Delete">
                   <i class="fa-regular fa-trash-can text-xs"></i>
                 </button>
@@ -1920,6 +2353,7 @@
       const priority = document.getElementById('wishPriority').value;
       const link = document.getElementById('wishLink').value.trim();
       const notes = document.getElementById('wishNotes').value.trim();
+      const selectedTripId = document.getElementById('wishTripSelect')?.value || (currentTripId === 'ALL' ? 'general' : currentTripId);
       if (!title) return;
 
       document.getElementById('wishTitle').value = '';
@@ -1936,9 +2370,11 @@
           link,
           notes,
           bought: false,
+          tripId: selectedTripId,
           createdAt: Date.now()
         });
-        showToast(`Added "${title}" to I Want It!`, 'rose');
+        const tripObj = getTripById(selectedTripId);
+        showToast(`Added "${title}" under ${tripObj.icon} ${tripObj.name}!`, 'rose');
       } catch (err) {
         console.error('Error adding wishlist item:', err);
         showToast('Could not save wishlist item', 'rose');
@@ -1966,7 +2402,10 @@
     }
 
     function renderWishlist() {
-      const list = appState.wishlist;
+      const list = currentTripId === 'ALL'
+        ? appState.wishlist
+        : appState.wishlist.filter(w => (w.tripId || 'general') === currentTripId);
+
       const activeWishes = list.filter(w => !w.bought);
 
       document.getElementById('navBadgeWishlist').textContent = activeWishes.length;
@@ -2001,10 +2440,11 @@
       if (!container) return;
 
       if (filtered.length === 0) {
+        const activeRoof = getTripById(currentTripId);
         container.innerHTML = `
           <div class="col-span-full py-12 text-center text-slate-400 text-sm">
             <i class="fa-solid fa-gift text-2xl mb-2 block text-slate-300"></i>
-            Your wishlist is empty — add the first item you want to get! 🛍️
+            No wishlist items under <strong>${escapeHtml(activeRoof.icon)} ${escapeHtml(activeRoof.name)}</strong> yet — add the first item you want to get! 🛍️
           </div>
         `;
         return;
@@ -2017,19 +2457,29 @@
       };
 
       container.innerHTML = filtered.map(item => {
+        const itemTripId = item.tripId || 'general';
         const ownerBadge = item.owner === 'Athanas'
           ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
           : item.owner === 'Yousra'
             ? 'bg-rose-50 text-rose-700 border-rose-200'
             : 'bg-emerald-50 text-emerald-700 border-emerald-200';
 
+        const tripOptions = appState.trips.map(t =>
+          `<option value="${escapeHtml(t.id)}" ${t.id === itemTripId ? 'selected' : ''}>${escapeHtml(t.icon)} ${escapeHtml(t.name)}</option>`
+        ).join('');
+
         return `
           <div class="p-4 rounded-2xl border transition flex flex-col justify-between ${item.bought ? 'bg-emerald-50/40 border-emerald-200/80' : 'bg-white border-slate-200/80 hover:border-slate-300'}">
             <div>
               <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${ownerBadge}">
-                  Wanted by: ${escapeHtml(item.owner)}
-                </span>
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${ownerBadge}">
+                    Wanted by: ${escapeHtml(item.owner)}
+                  </span>
+                  <select onchange="moveItemToTrip('wishlist', '${item.id}', this.value)" class="px-2 py-0.5 rounded-full bg-slate-100 hover:bg-rose-50 text-[11px] font-bold text-slate-700 border border-slate-200/80 focus:outline-none cursor-pointer" title="Assign to Trip / Roof">
+                    ${tripOptions}
+                  </select>
+                </div>
                 <div class="flex items-center gap-1.5">
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${prioStyle[item.priority] || 'bg-slate-100'}">${escapeHtml(item.priority)}</span>
                   <button onclick="deleteWishItem('${item.id}')" class="w-7 h-7 rounded-lg hover:bg-rose-50 text-slate-300 hover:text-rose-600 flex items-center justify-center transition">
@@ -2103,6 +2553,12 @@
     // Expose handlers to window for HTML onclick attributes
     Object.assign(window, {
       switchMainPage,
+      selectActiveTrip,
+      openTripModal,
+      closeTripModal,
+      handleSaveTrip,
+      handleDeleteTrip,
+      moveItemToTrip,
       showAllDates,
       setQuickRange,
       fitRangeToAllExpenses,
@@ -2137,6 +2593,8 @@
     selectCategory('Trip');
     selectBucketProposer('Both');
     selectWishOwner('Athanas');
+    ensureActiveTripValid();
+    renderTripNavigation();
     syncInputsFromState();
     renderAll();
     renderBucketList();
@@ -2145,3 +2603,19 @@
   </script>
 </body>
 </html>
+```
+
+### How the "Under One Roof" System Works for Athanas & Yousra
+
+1. **Create Any Trip / Roof (`+ New Trip / Roof`):**
+   - Click **`+ New Trip / Roof`** in the top-right header, pick an icon (like `🇸🇮`), type **`Ljubljana`**, and optionally pick your trip dates.
+   - It immediately syncs via Firebase so Yousra sees the **🇸🇮 Ljubljana** roof tab appear on her screen in real time.
+2. **Everything Under One Roof:**
+   - When you click the **🇸🇮 Ljubljana** pill in the bar below the header:
+     - **Expenses & Budgets:** Shows only Ljubljana expenses, calculates how much Athanas paid vs. Yousra paid for Ljubljana, and saves a dedicated budget limit & calendar range specifically for Ljubljana.
+     - **Bucket List:** Shows only the places to visit, restaurants, and activities planned for Ljubljana.
+     - **I Want It:** Filters wishes assigned to that roof.
+3. **Move Existing Items Effortlessly:**
+   - Any items you already created are automatically preserved under **🏠 General / Everyday**.
+   - Every expense row, Bucket List card, and Wishlist card now has a small **Trip/Roof dropdown badge** so you can move any existing item into **🇸🇮 Ljubljana** (or any future trip) with one click.
+   - Clicking **🌍 All Trips (Overview)** lets you view your combined totals across every trip at once.
